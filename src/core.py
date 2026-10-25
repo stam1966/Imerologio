@@ -411,7 +411,8 @@ def is_valid_database(path) -> bool:
         with open(path, 'rb') as f:
             if f.read(16) != b'SQLite format 3\x00':
                 return False
-        con = sqlite3.connect('file:%s?mode=ro' % str(path).replace('?', '%3f'), uri=True)
+        from pathlib import Path
+        con = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
         try:
             cols = {r[1] for r in con.execute('PRAGMA table_info(actions)')}
         finally:

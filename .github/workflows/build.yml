@@ -76,16 +76,22 @@ jobs:
 
       - name: Δοκιμαστική σιωπηλή εγκατάσταση και απεγκατάσταση
         run: |
+          function Fail($m) { Write-Host "::error title=Εγκατάσταση::$m"; exit 1 }
           $setup = Get-ChildItem dist\Programma_Draseon_Setup_*.exe | Select-Object -First 1
-          Start-Process $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TASKS=' -Wait
+          Start-Process $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TASKS=','/LOG=setup.log' -Wait
           $app = "$env:LOCALAPPDATA\Programs\ProgrammaDraseon"
-          if (-not (Test-Path "$app\runtime\pythonw.exe")) { throw "Η εγκατάσταση δεν δημιούργησε την εφαρμογή" }
-          if (Test-Path "$app\runtime-x64") { throw "Δεν πρέπει να εγκαθίστανται και τα δύο runtime" }
-          & "$app\runtime\python.exe" -X utf8 "$app\src\preflight.py"
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if (-not (Test-Path "$app\runtime\pythonw.exe")) { Get-Content setup.log -Tail 30 | Write-Host; Fail "Η εγκατάσταση δεν δημιούργησε την εφαρμογή" }
+          if (Test-Path "$app\runtime-x64") { Fail "Εγκαταστάθηκε και ο φάκελος runtime-x64" }
+          if (Test-Path "$app\runtime-x86") { Fail "Εγκαταστάθηκε και ο φάκελος runtime-x86" }
+          if (-not (Test-Path "$app\src\templates\ypodeigma_eisagogis_draseon.xlsx")) { Fail "Λείπει το υπόδειγμα Excel" }
+          $out = & "$app\runtime\python.exe" -X utf8 "$app\src\preflight.py" 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { Fail ("preflight: " + (($out -split "`n" | Select-Object -Last 6) -join ' | ')) }
           $un = Get-ChildItem "$app\unins*.exe" | Select-Object -First 1
           Start-Process $un.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
-          if (Test-Path "$app\src") { throw "Η απεγκατάσταση άφησε τον κώδικα" }
+          # ο απεγκαταστάτης του Inno συνεχίζει από αντίγραφο στο Temp: περιμένουμε να τελειώσει
+          for ($i = 0; $i -lt 90 -and (Test-Path "$app\src"); $i++) { Start-Sleep -Seconds 1 }
+          if (Test-Path "$app\src") { Fail "Η απεγκατάσταση άφησε τον κώδικα της εφαρμογής" }
           Write-Host "Εγκατάσταση/απεγκατάσταση OK"
 
       - name: Αντίγραφο με σταθερό όνομα (μόνιμος σύνδεσμος λήψης)

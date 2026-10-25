@@ -50,7 +50,7 @@ Name: "el"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "Εικονίδιο στην επιφάνεια εργασίας"; GroupDescription: "Εικονίδια:"
 
 [Files]
-Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "runtime-x64\*,runtime-x86\*,shared_data_path.txt,Dedomena\*,__pycache__"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "\runtime-x64,\runtime-x86,\shared_data_path.txt,\Dedomena,\tools,__pycache__"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#SourceDir}\runtime-x64\*"; DestDir: "{app}\runtime"; Check: Is64BitInstallMode; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#SourceDir}\runtime-x86\*"; DestDir: "{app}\runtime"; Check: not Is64BitInstallMode; Flags: ignoreversion recursesubdirs createallsubdirs
 
