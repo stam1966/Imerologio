@@ -15,7 +15,7 @@ import threading
 import unicodedata
 from datetime import date, datetime, timedelta
 
-VERSION = '2.0.1'
+VERSION = '2.1.0'
 APP_NAME = 'Πρόγραμμα Δράσεων Σχολείου'
 APP_AUTHOR = 'Αρχική ιδέα – επιμέλεια: Σταμάτης Κοκολόγος | Υλοποίηση: Σταμάτης Κοκολόγος, με αξιοποίηση εργαλείων τεχνητής νοημοσύνης'
 DB_NAME = 'school_actions.db'
@@ -67,6 +67,19 @@ CATEGORY_CONFIG_DEFAULTS = {
     'ics': True,        # Αρχείο ημερολογίου ICS
     'reports': True,    # Εκτυπώσεις / αναφορές
     'icon': '',
+    'color': '',        # χρώμα ένδειξης (#RRGGBB)· κενό = αυτόματο
+}
+
+# Χρώματα κατηγοριών (ευανάγνωστα σε λευκό φόντο, ξεχωρίζουν μεταξύ τους)
+CATEGORY_COLORS = ['#2F6F73', '#3B6FD4', '#7A4FC9', '#C2417A', '#C98A0B', '#3F8F4A', '#D0632B', '#5B6B7A', '#1E8FA8', '#9A5B2E']
+CATEGORY_DEFAULT_COLORS = {
+    'Θεσμοθετημένες Σχολικές Ημέρες': '#3B6FD4',
+    'Εθνικές Επέτειοι': '#1E8FA8',
+    'Ευρωπαϊκές & Διεθνείς Ημέρες': '#7A4FC9',
+    'Σχολική Ζωή & Δράσεις': '#3F8F4A',
+    'Ενημέρωση & Οργάνωση': '#C98A0B',
+    'Εσωτερική Αξιολόγηση': '#D0632B',
+    'Άλλο': '#5B6B7A',
 }
 
 CATEGORY_ICON_CHOICES = [
@@ -125,7 +138,13 @@ def normalize_category_config(categories, raw_config=None) -> dict:
         cfg = default_category_config(category)
         for key in CATEGORY_CONFIG_DEFAULTS:
             if key in existing:
-                cfg[key] = str(existing.get(key) or '')[:4] if key == 'icon' else bool(existing.get(key))
+                if key == 'icon':
+                    cfg[key] = str(existing.get(key) or '')[:4]
+                elif key == 'color':
+                    c = str(existing.get(key) or '').strip()
+                    cfg[key] = c if (len(c) == 7 and c.startswith('#') and all(x in '0123456789abcdefABCDEF' for x in c[1:])) else ''
+                else:
+                    cfg[key] = bool(existing.get(key))
         if category.casefold() == INTERNAL_USE_CATEGORY.casefold():
             # Η κατηγορία εσωτερικής αξιολόγησης παραμένει πάντα ασφαλής.
             cfg.update({'internal': True, 'website': False, 'google': False, 'ics': False})
@@ -133,6 +152,11 @@ def normalize_category_config(categories, raw_config=None) -> dict:
         if cfg['internal'] and not cfg['icon']:
             cfg['icon'] = '🔒'
         cleaned[category] = cfg
+    used = {c['color'] for c in cleaned.values() if c['color']}
+    free = [c for c in CATEGORY_COLORS if c not in used] or CATEGORY_COLORS
+    for i, (name, cfg) in enumerate(cleaned.items()):  # αυτόματο χρώμα όπου δεν έχει οριστεί
+        if not cfg['color']:
+            cfg['color'] = CATEGORY_DEFAULT_COLORS.get(name) or free[i % len(free)]
     return cleaned
 
 
@@ -787,6 +811,19 @@ class Database:
             self._remember_year(sy)
         return len(records)
 
+    def restore_actions(self, rows) -> int:
+        """Αναίρεση διαγραφής: επανεισαγωγή δράσεων με τα αρχικά τους στοιχεία και αναγνωριστικά."""
+        n = 0
+        with self.lock:
+            for r in rows or []:
+                rec = self.clean_action(r)
+                cur = self.conn.execute('INSERT OR IGNORE INTO actions(id,' + ','.join(ACTION_FIELDS) + ',created_at,updated_at) VALUES(?,' +
+                                        ','.join('?' for _ in ACTION_FIELDS) + ',?,?)',
+                                        [int(r['id'])] + [rec[k] for k in ACTION_FIELDS] + [r.get('created_at') or now_iso(), now_iso()])
+                n += cur.rowcount or 0
+            self.conn.commit()
+        return n
+
     def delete_actions(self, ids) -> int:
         ids = [int(i) for i in ids]
         if not ids:
@@ -942,6 +979,17 @@ class Database:
                                             (log_date, desc, None, now, now)).lastrowid)
             self.conn.commit()
         return lid
+
+    def lifelog_restore(self, rows) -> int:
+        n = 0
+        with self.lock:
+            for r in rows or []:
+                cur = self.conn.execute('INSERT OR IGNORE INTO life_log(id, log_date, description, source_action_id, created_at, updated_at) VALUES(?,?,?,?,?,?)',
+                                        (int(r['id']), parse_date_to_iso(r['log_date']), str(r['description']), r.get('source_action_id'),
+                                         r.get('created_at') or now_iso(), now_iso()))
+                n += cur.rowcount or 0
+            self.conn.commit()
+        return n
 
     def lifelog_delete(self, ids) -> None:
         ids = [int(i) for i in ids]

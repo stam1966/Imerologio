@@ -107,8 +107,6 @@ def select_rows(db: core.Database, opt: dict):
     parts.append('Περίοδος: ' + (core.month_label(m_from + '-01') if m_from == m_to else f"{core.month_label(m_from + '-01')} έως {core.month_label(m_to + '-01')}"))
     cats = [c for c in (opt.get('categories') or []) if c]
     all_cats = db.categories()
-    if kind == 'by_category' and category == 'Όλες' and (not cats or set(cats) == set(all_cats)):
-        raise ValueError('Επιλέξτε συγκεκριμένη κατηγορία ή μία/περισσότερες κατηγορίες στη λίστα «Κατηγορίες προς εκτύπωση».')
     if cats and set(cats) != set(all_cats):
         rows = [r for r in rows if r['category'] in cats]
         parts.append('Κατηγορίες: ' + ', '.join(cats))

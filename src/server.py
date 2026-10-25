@@ -103,6 +103,7 @@ def state():
         'version': core.VERSION, 'app_name': core.APP_NAME, 'author': core.APP_AUTHOR, 'today': date.today().isoformat(),
         'school_name': d.school_name(), 'school_years': d.school_years(), 'current_school_year': d.current_school_year(),
         'categories': d.categories(), 'category_config': d.category_config(), 'icon_choices': core.CATEGORY_ICON_CHOICES,
+        'palette': core.CATEGORY_COLORS,
         'statuses': core.STATUSES, 'flags': core.CALENDAR_FLAGS, 'features': d.features(), 'report_types': reports.REPORT_TYPES,
         'default_category': core.DEFAULT_ACTION_CATEGORY,
         'data': {'root': str(paths().root), 'source': APP['source'], 'db': str(paths().db),
@@ -160,8 +161,13 @@ def a_actions_delete(r):
     ids = [int(i) for i in r.get('ids') or []]
     if not ids:
         raise ValueError('Δεν επιλέχθηκαν δράσεις.')
+    rows = db().list_actions({'ids': ids})
     name = auto_backup('auto_delete', 'auto_backup_before_delete')
-    return {'deleted': db().delete_actions(ids), 'backup': name}
+    return {'deleted': db().delete_actions(ids), 'backup': name, 'rows': rows}
+
+
+def a_actions_undelete(r):
+    return {'restored': db().restore_actions(r.get('rows') or [])}
 
 
 def a_actions_bulk(r):
@@ -311,8 +317,15 @@ def a_lifelog_save(r):
 
 def a_lifelog_delete(r):
     lifelog_guard()
-    db().lifelog_delete(r.get('ids') or [])
-    return {}
+    ids = {int(i) for i in r.get('ids') or []}
+    rows = [x for x in db().lifelog_list() if x['id'] in ids]
+    db().lifelog_delete(ids)
+    return {'rows': rows}
+
+
+def a_lifelog_undelete(r):
+    lifelog_guard()
+    return {'restored': db().lifelog_restore(r.get('rows') or [])}
 
 
 def a_lifelog_transfer(r):
@@ -537,11 +550,11 @@ def a_update_backups(r):
 # ------------------------------------------------------------------ HTTP
 ACTIONS = {
     'state': a_state, 'dashboard': a_dashboard,
-    'actions/list': a_actions_list, 'actions/save': a_actions_save, 'actions/delete': a_actions_delete, 'actions/bulk': a_actions_bulk,
+    'actions/list': a_actions_list, 'actions/save': a_actions_save, 'actions/delete': a_actions_delete, 'actions/undelete': a_actions_undelete, 'actions/bulk': a_actions_bulk,
     'guide/list': a_guide_list, 'guide/save': a_guide_save, 'guide/delete': a_guide_delete, 'guide/reset': a_guide_reset, 'guide/create': a_guide_create,
     'import/preview': a_import_preview, 'import/apply': a_import_apply, 'template': a_template, 'export': a_export, 'report': a_report,
     'lifelog/status': a_lifelog_status, 'lifelog/setup': a_lifelog_setup, 'lifelog/unlock': a_lifelog_unlock, 'lifelog/lock': a_lifelog_lock,
-    'lifelog/list': a_lifelog_list, 'lifelog/save': a_lifelog_save, 'lifelog/delete': a_lifelog_delete, 'lifelog/transfer': a_lifelog_transfer,
+    'lifelog/list': a_lifelog_list, 'lifelog/save': a_lifelog_save, 'lifelog/delete': a_lifelog_delete, 'lifelog/undelete': a_lifelog_undelete, 'lifelog/transfer': a_lifelog_transfer,
     'lifelog/report': a_lifelog_report, 'lifelog/settings': a_lifelog_settings,
     'backup/list': a_backup_list, 'backup/create': a_backup_create, 'backup/restore': a_backup_restore, 'backup/upload': a_backup_upload,
     'backup/download': a_backup_download, 'backup/current': a_backup_current, 'backup/settings': a_backup_settings,

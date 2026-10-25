@@ -138,8 +138,8 @@ class Reports(Base):
         self.assertEqual(r['count'], 1); self.assertIn('Οκτώβριος 2026', r['html'])
         r = reports.actions_report(self.db, {'type': 'completed', 'school_year': '2026-2027'})
         self.assertEqual(r['count'], 1)
-        with self.assertRaises(ValueError):
-            reports.actions_report(self.db, {'type': 'by_category', 'school_year': '2026-2027'})
+        r = reports.actions_report(self.db, {'type': 'by_category', 'school_year': '2026-2027'})
+        self.assertGreaterEqual(r['count'], 1)
         r = reports.actions_report(self.db, {'type': 'by_category', 'school_year': '2026-2027', 'categories': ['Εσωτερική Αξιολόγηση']})
         self.assertEqual(r['count'], 1)
         with self.assertRaises(ValueError):
