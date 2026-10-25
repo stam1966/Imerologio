@@ -35,6 +35,10 @@ def normalize_header(value: str) -> str:
 
 # ------------------------------------------------------------------ ανάγνωση αρχείων
 def read_csv(raw: bytes) -> list[dict]:
+    return _rows_from_matrix(read_csv_matrix(raw))
+
+
+def read_csv_matrix(raw: bytes) -> list[list[str]]:
     text = None
     for enc in ('utf-8-sig', 'utf-8', 'cp1253'):
         try:
@@ -49,8 +53,7 @@ def read_csv(raw: bytes) -> list[dict]:
     except csv.Error:
         dialect = csv.excel
     reader = csv.reader(io.StringIO(text, newline=''), dialect)
-    matrix = [row for row in reader]
-    return _rows_from_matrix(matrix)
+    return [row for row in reader]
 
 
 NS = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
@@ -66,6 +69,10 @@ def _col_index(ref: str) -> int:
 
 
 def read_xlsx(raw: bytes) -> list[dict]:
+    return _rows_from_matrix(read_xlsx_matrix(raw))
+
+
+def read_xlsx_matrix(raw: bytes) -> list[list[str]]:
     """Ανάγνωση του πρώτου φύλλου ενός .xlsx (κείμενα, αριθμοί, ημερομηνίες/ώρες του Excel)."""
     try:
         z = zipfile.ZipFile(io.BytesIO(raw))
@@ -118,7 +125,52 @@ def read_xlsx(raw: bytes) -> list[dict]:
                 val = _excel_number(v.text, c.get('s'), date_styles)
             values.append(val.strip())
         matrix.append(values)
-    return _rows_from_matrix(matrix)
+    return matrix
+
+
+WNS = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+
+
+def read_docx_matrix(raw: bytes) -> list[list[str]]:
+    """Γραμμές όλων των πινάκων ενός .docx· κάθε κελί με τις παραγράφους του χωρισμένες με αλλαγή γραμμής."""
+    try:
+        root = ET.fromstring(zipfile.ZipFile(io.BytesIO(raw)).read('word/document.xml'))
+    except (zipfile.BadZipFile, KeyError, ET.ParseError) as ex:
+        raise ValueError('Δεν ήταν δυνατή η ανάγνωση του αρχείου Word (.docx). (' + str(ex)[:80] + ')')
+    matrix = []
+    for tbl in root.iter(WNS + 'tbl'):
+        for tr in tbl.findall(WNS + 'tr'):
+            row = []
+            for tc in tr.findall(WNS + 'tc'):
+                paras = []
+                for p in tc.iter(WNS + 'p'):
+                    parts = []
+                    for el in p.iter():
+                        if el.tag == WNS + 't':
+                            parts.append(el.text or '')
+                        elif el.tag in (WNS + 'br', WNS + 'cr'):
+                            parts.append('\n')
+                        elif el.tag == WNS + 'tab':
+                            parts.append(' ')
+                    paras.append(''.join(parts).strip())
+                row.append('\n'.join(x for x in paras if x))
+            matrix.append(row)
+    if not matrix:
+        raise ValueError('Το αρχείο Word δεν περιέχει πίνακα με ημερομηνίες και καταγραφές.')
+    return matrix
+
+
+def read_matrix(name: str, raw: bytes) -> list[list[str]]:
+    suffix = (name or '').lower().rsplit('.', 1)[-1]
+    if suffix in ('xls', 'doc'):
+        raise ValueError('Οι παλιές μορφές .xls/.doc δεν υποστηρίζονται. Αποθηκεύστε το αρχείο ως .xlsx, .docx ή CSV.')
+    if suffix == 'pdf':
+        raise ValueError('Τα αρχεία PDF δεν διαβάζονται. Χρησιμοποιήστε το αρχικό αρχείο Word (.docx) ή Excel.')
+    if suffix == 'docx':
+        return read_docx_matrix(raw)
+    if suffix == 'xlsx' or raw[:2] == b'PK':
+        return read_xlsx_matrix(raw)
+    return read_csv_matrix(raw)
 
 
 def _date_styles(z) -> set:
@@ -385,3 +437,77 @@ def export(db: core.Database, kind: str, rows: list[dict]) -> dict:
     pending = [r['id'] for r in keep if r['calendar_flag'] != 'Περάστηκε' and r['status'] != 'Ακυρώθηκε'] if kind in ('google', 'ics') else []
     return {'data': data, 'filename': f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}", 'mime': mime,
             'count': len(keep), 'skipped': len(rows) - len(keep), 'pending_ids': pending}
+
+
+# ------------------------------------------------------------------ Ημερολόγιο Σχολικής Ζωής: εισαγωγή
+LL_DATE_HEADERS = {'ημερομηνια', 'date', 'ημ/νια', 'ημνια', 'ημερ'}
+LL_TEXT_HEADERS = {'καταγραφη', 'καταγραφες', 'περιγραφη', 'θεμα', 'κειμενο', 'description', 'γεγονος', 'γεγονοτα',
+                   'συμβαν', 'συμβαντα', 'σημειωσεις', 'text', 'entry'}
+
+
+def _ll_key(text: str) -> str:
+    return re.sub(r'[\s\.\-‐–,;:·]+', '', core.fold(text or ''))
+
+
+def plan_lifelog_import(db: core.Database, name: str, raw: bytes) -> dict:
+    """Καταγραφές από πίνακα (Excel, CSV ή Word) με στήλες «Ημερομηνία» και «Καταγραφή/Θέμα/Περιγραφή».
+    Γραμμές χωρίς ημερομηνία (συνέχεια κελιού σε νέα σελίδα) ενώνονται με την προηγούμενη.
+    Ίδια ημερομηνία και ίδιο κείμενο με υπάρχουσα καταγραφή → παραλείπεται."""
+    matrix = [[(c or '').strip() for c in r] for r in read_matrix(name, raw)]
+    matrix = [r for r in matrix if any(r)]
+    if not matrix:
+        raise ValueError('Το αρχείο είναι κενό.')
+    di = ti = None
+    start = 0
+    for n, row in enumerate(matrix[:10]):
+        keys = [re.sub(r'[\s_]+', '', core.fold(c)) for c in row]
+        d = next((i for i, k in enumerate(keys) if k in LL_DATE_HEADERS or k.startswith('ημερομην')), None)
+        t = next((i for i, k in enumerate(keys) if k in LL_TEXT_HEADERS), None)
+        if d is not None and t is not None:
+            di, ti, start = d, t, n + 1
+            break
+    if di is None:  # χωρίς επικεφαλίδες: 1η στήλη ημερομηνία, 2η κείμενο
+        di, ti = 0, 1
+    header_keys = {k for k in LL_DATE_HEADERS | LL_TEXT_HEADERS}
+    existing = {(r['log_date'], _ll_key(r['description'])) for r in db.lifelog_list()}
+    records, errors, duplicates, seen = [], [], 0, set()
+    for n, row in enumerate(matrix[start:], start=start + 1):
+        dv = row[di] if di < len(row) else ''
+        tv = row[ti] if ti < len(row) else ''
+        if re.sub(r'[\s_]+', '', core.fold(dv)) in header_keys:  # επανάληψη επικεφαλίδας σε νέα σελίδα
+            continue
+        tv = re.sub(r'[ \t]+', ' ', tv.replace('‐', '-')).strip()
+        if not dv:
+            if tv and records:
+                prev = records[-1]
+                prev['description'] += ('\n' if re.search(r'[.;:!»"]$', prev['description']) else ' ') + tv
+            elif tv:
+                errors.append(f'Γραμμή {n}: λείπει η ημερομηνία.')
+            continue
+        try:
+            iso = core.parse_date_to_iso(dv.split(' ')[0])
+        except ValueError:
+            errors.append(f'Γραμμή {n}: μη έγκυρη ημερομηνία «{dv}».')
+            continue
+        if not 1990 <= int(iso[:4]) <= 2100:
+            errors.append(f'Γραμμή {n}: μη έγκυρη ημερομηνία «{dv}».')
+            continue
+        if not tv:
+            continue
+        records.append({'log_date': iso, 'description': tv, '_line': n})
+    out = []
+    for r in records:
+        key = (r['log_date'], _ll_key(r['description']))
+        if key in existing or key in seen:
+            duplicates += 1
+            continue
+        seen.add(key)
+        r['school_year'] = core.school_year_for_iso_date(r['log_date'])
+        out.append(r)
+    years = {}
+    for r in out:
+        years[r['school_year']] = years.get(r['school_year'], 0) + 1
+    if not out and not duplicates and not errors:
+        raise ValueError('Δεν βρέθηκαν καταγραφές. Το αρχείο χρειάζεται στήλη «Ημερομηνία» και στήλη «Καταγραφή» (ή «Θέμα» / «Περιγραφή»).')
+    return {'records': out, 'count': len(out), 'duplicates': duplicates, 'errors': errors,
+            'years': [{'year': y, 'count': c} for y, c in sorted(years.items())]}

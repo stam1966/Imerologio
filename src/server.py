@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 import webbrowser
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -305,9 +305,49 @@ def a_lifelog_lock(r):
     return lifelog_status()
 
 
+def _ll_range(r):
+    """Περίοδος από τα πεδία από/έως ή, αν λείπουν, από το σχολικό έτος."""
+    f, t = r.get('date_from') or '', r.get('date_to') or ''
+    sy = r.get('school_year') or ''
+    if not f and not t and core.valid_school_year_label(sy):
+        a, b = core.school_year_bounds(sy)
+        f, t = a.isoformat(), (b - timedelta(days=1)).isoformat()
+    return f, t
+
+
 def a_lifelog_list(r):
     lifelog_guard()
-    return {'rows': db().lifelog_list(r.get('search') or '', r.get('date_from') or '', r.get('date_to') or '')}
+    f, t = _ll_range(r)
+    return {'rows': db().lifelog_list(r.get('search') or '', f, t), 'years': db().lifelog_years()}
+
+
+def _ll_file(r):
+    raw = base64.b64decode(r.get('data') or '')
+    if len(raw) > 30 * 1024 * 1024:
+        raise ValueError('Το αρχείο είναι πολύ μεγάλο.')
+    return exports.plan_lifelog_import(db(), r.get('name') or '', raw)
+
+
+def a_lifelog_import_preview(r):
+    lifelog_guard()
+    plan = _ll_file(r)
+    plan['records'] = plan['records'][:400]
+    return plan
+
+
+def a_lifelog_import_apply(r):
+    lifelog_guard()
+    plan = _ll_file(r)
+    if not plan['records']:
+        raise ValueError('Δεν υπάρχουν νέες καταγραφές για εισαγωγή.')
+    name = auto_backup('auto_import', 'auto_backup_before_import')
+    return {'imported': db().lifelog_insert_many(plan['records']), 'duplicates': plan['duplicates'], 'backup': name,
+            'years': plan['years']}
+
+
+def a_lifelog_suggest(r):
+    lifelog_guard()
+    return db().lifelog_suggest(r.get('date') or '', r.get('search') or '')
 
 
 def a_lifelog_save(r):
@@ -335,10 +375,13 @@ def a_lifelog_transfer(r):
 
 def a_lifelog_report(r):
     lifelog_guard()
-    rows = db().lifelog_list(r.get('search') or '', r.get('date_from') or '', r.get('date_to') or '')
+    f, t = _ll_range(r)
+    rows = db().lifelog_list(r.get('search') or '', f, t)
     sub = []
-    if r.get('date_from') or r.get('date_to'):
-        sub.append('Περίοδος: ' + (core.iso_to_display(r.get('date_from')) or '…') + ' έως ' + (core.iso_to_display(r.get('date_to')) or '…'))
+    if not r.get('date_from') and not r.get('date_to') and core.valid_school_year_label(r.get('school_year') or ''):
+        sub.append('Σχολικό έτος: ' + r['school_year'])
+    elif f or t:
+        sub.append('Περίοδος: ' + (core.iso_to_display(f) or '…') + ' έως ' + (core.iso_to_display(t) or '…'))
     if r.get('search'):
         sub.append(f"Αναζήτηση: «{r['search']}»")
     return reports.lifelog_report(db(), rows, ' • '.join(sub), toolbar=bool(r.get('toolbar')))
@@ -554,7 +597,7 @@ ACTIONS = {
     'guide/list': a_guide_list, 'guide/save': a_guide_save, 'guide/delete': a_guide_delete, 'guide/reset': a_guide_reset, 'guide/create': a_guide_create,
     'import/preview': a_import_preview, 'import/apply': a_import_apply, 'template': a_template, 'export': a_export, 'report': a_report,
     'lifelog/status': a_lifelog_status, 'lifelog/setup': a_lifelog_setup, 'lifelog/unlock': a_lifelog_unlock, 'lifelog/lock': a_lifelog_lock,
-    'lifelog/list': a_lifelog_list, 'lifelog/save': a_lifelog_save, 'lifelog/delete': a_lifelog_delete, 'lifelog/undelete': a_lifelog_undelete, 'lifelog/transfer': a_lifelog_transfer,
+    'lifelog/list': a_lifelog_list, 'lifelog/save': a_lifelog_save, 'lifelog/delete': a_lifelog_delete, 'lifelog/undelete': a_lifelog_undelete, 'lifelog/import/preview': a_lifelog_import_preview, 'lifelog/import/apply': a_lifelog_import_apply, 'lifelog/suggest': a_lifelog_suggest, 'lifelog/transfer': a_lifelog_transfer,
     'lifelog/report': a_lifelog_report, 'lifelog/settings': a_lifelog_settings,
     'backup/list': a_backup_list, 'backup/create': a_backup_create, 'backup/restore': a_backup_restore, 'backup/upload': a_backup_upload,
     'backup/download': a_backup_download, 'backup/current': a_backup_current, 'backup/settings': a_backup_settings,

@@ -10,12 +10,13 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import sqlite3
 import threading
 import unicodedata
 from datetime import date, datetime, timedelta
 
-VERSION = '2.1.0'
+VERSION = '2.2.0'
 APP_NAME = 'Πρόγραμμα Δράσεων Σχολείου'
 APP_AUTHOR = 'Αρχική ιδέα – επιμέλεια: Σταμάτης Κοκολόγος | Υλοποίηση: Σταμάτης Κοκολόγος, με αξιοποίηση εργαλείων τεχνητής νοημοσύνης'
 DB_NAME = 'school_actions.db'
@@ -979,6 +980,74 @@ class Database:
                                             (log_date, desc, None, now, now)).lastrowid)
             self.conn.commit()
         return lid
+
+    def lifelog_insert_many(self, records) -> int:
+        now = now_iso()
+        n = 0
+        with self.lock:
+            for r in records or []:
+                desc = str(r.get('description') or '').strip()
+                if not desc:
+                    continue
+                self.conn.execute('INSERT INTO life_log(log_date, description, source_action_id, created_at, updated_at) VALUES(?,?,?,?,?)',
+                                  (parse_date_to_iso(r['log_date']), desc, None, now, now))
+                n += 1
+            self.conn.commit()
+        return n
+
+    def lifelog_years(self) -> list[str]:
+        with self.lock:
+            dates = [r[0] for r in self.conn.execute('SELECT DISTINCT log_date FROM life_log').fetchall()]
+        return sorted({school_year_for_iso_date(d) for d in dates if d})
+
+    def lifelog_suggest(self, target_iso: str, search: str = '', window: int = 10, limit: int = 40) -> dict:
+        """Καταγραφές προηγούμενων σχολικών ετών: της ίδιας περιόδου (± window ημέρες) ή όσες ταιριάζουν στην αναζήτηση."""
+        try:
+            target = datetime.strptime(parse_date_to_iso(target_iso), '%Y-%m-%d').date()
+        except ValueError:
+            target = date.today()
+        sy_start = school_year_bounds(school_year_of(target))[0].isoformat()
+        with self.lock:
+            rows = [dict(r) for r in self.conn.execute('SELECT * FROM life_log WHERE log_date < ? ORDER BY log_date DESC, id ASC', (sy_start,)).fetchall()]
+
+        def offset(iso: str) -> int:
+            d = datetime.strptime(iso, '%Y-%m-%d').date()
+            best = None
+            for y in (target.year - 1, target.year, target.year + 1):
+                try:
+                    diff = (d.replace(year=y) - target).days
+                except ValueError:  # 29 Φεβρουαρίου
+                    diff = (date(y, 2, 28) - target).days
+                if best is None or abs(diff) < abs(best):
+                    best = diff
+            return best
+
+        words = fold(search or '').split()
+        items = {}
+        for r in rows:
+            off = offset(r['log_date'])
+            if not words and abs(off) > window:
+                continue
+            for line in [x.strip() for x in str(r['description']).split('\n') if x.strip()]:
+                if words and not all(w in fold(line) for w in words):
+                    continue
+                key = re.sub(r'\d+', '#', re.sub(r'[\s.,;:·\-‐–]+', ' ', fold(line))).strip()
+                rank = (abs(off), -int(r['log_date'][:4]))
+                it = items.get(key)
+                if it is None:
+                    items[key] = {'text': line, 'log_date': r['log_date'], 'offset': off, 'id': r['id'],
+                                  'school_year': school_year_for_iso_date(r['log_date']), 'times': 1, '_rank': rank, '_dates': {r['log_date']}}
+                else:
+                    if r['log_date'] not in it['_dates']:
+                        it['times'] += 1
+                        it['_dates'].add(r['log_date'])
+                    if rank < it['_rank']:
+                        it.update(text=line, log_date=r['log_date'], offset=off, id=r['id'],
+                                  school_year=school_year_for_iso_date(r['log_date']), _rank=rank)
+        out = sorted(items.values(), key=lambda it: (it['_rank'], -it['times']) if not words else (-it['times'], it['_rank']))
+        for it in out:
+            it.pop('_rank'); it.pop('_dates')
+        return {'items': out[:limit], 'total': len(out), 'has_history': bool(rows)}
 
     def lifelog_restore(self, rows) -> int:
         n = 0

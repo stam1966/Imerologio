@@ -155,3 +155,55 @@ class Reports(Base):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+
+
+def docx_bytes(rows):
+    W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    def cell(v):
+        return '<w:tc>' + ''.join(f'<w:p><w:r><w:t xml:space="preserve">{p}</w:t></w:r></w:p>' for p in (v.split('\n') if v else [''])) + '</w:tc>'
+    body = '<w:tbl>' + ''.join('<w:tr>' + ''.join(cell(v) for v in r) + '</w:tr>' for r in rows) + '</w:tbl>'
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, 'w') as z:
+        z.writestr('word/document.xml', f'<w:document xmlns:w="{W}"><w:body><w:p/>{body}</w:body></w:document>')
+    return b.getvalue()
+
+
+class LifelogImport(Base):
+    def test_docx_with_page_continuation_and_duplicates(self):
+        raw = docx_bytes([['Ημερομηνία', 'Θέμα'], ['11/9/2024', 'Έγινε ο Αγιασμός.\nΣυνεδρίαση της ΕΔΥ.'],
+                          ['20/2/2025', 'Προσήλθε η μητέρα της μαθήτριας με'], ['', 'αφορμή το πρόβλημα.'],
+                          ['Ημερομηνία', 'Θέμα'], ['24/3/20266', 'Εκδήλωση 25ης Μαρτίου.'], ['1/9/2025', 'Έναρξη σχολικού έτους 2025-2026.']])
+        p = exports.plan_lifelog_import(self.db, 'imerologio.docx', raw)
+        self.assertEqual(p['count'], 3)
+        self.assertEqual(p['records'][0]['description'], 'Έγινε ο Αγιασμός.\nΣυνεδρίαση της ΕΔΥ.')
+        self.assertEqual(p['records'][1]['description'], 'Προσήλθε η μητέρα της μαθήτριας με αφορμή το πρόβλημα.')
+        self.assertEqual(len(p['errors']), 1)
+        self.assertEqual([y['year'] for y in p['years']], ['2024-2025', '2025-2026'])
+        self.assertEqual(self.db.lifelog_insert_many(p['records']), 3)
+        again = exports.plan_lifelog_import(self.db, 'imerologio.docx', raw)
+        self.assertEqual((again['count'], again['duplicates']), (0, 3))
+
+    def test_csv_and_xlsx_and_pdf(self):
+        p = exports.plan_lifelog_import(self.db, 'a.csv', 'Ημερομηνία;Καταγραφή\n2/9/2024;Έναρξη.\n'.encode('utf-8'))
+        self.assertEqual(p['count'], 1)
+        p = exports.plan_lifelog_import(self.db, 'a.xlsx', xlsx_bytes([['Ημερομηνία', 'Περιγραφή'], [45546, 'Αγιασμός']], date_cols=(0,)))
+        self.assertEqual(p['records'][0]['log_date'], '2024-09-11')
+        with self.assertRaises(ValueError):
+            exports.plan_lifelog_import(self.db, 'a.pdf', b'%PDF-1.4')
+
+    def test_suggestions_from_previous_years(self):
+        self.db.lifelog_insert_many([
+            {'log_date': '2024-10-28', 'description': 'Παρέλαση στη Λαμία.\nΠραγματοποιήθηκε η 7η συνεδρίαση της ΕΔΥ.'},
+            {'log_date': '2025-10-28', 'description': 'Παρέλαση στη Λαμία.'},
+            {'log_date': '2025-10-31', 'description': 'Πραγματοποιήθηκε η 8η συνεδρίαση της ΕΔΥ.'},
+            {'log_date': '2025-03-25', 'description': 'Δοξολογία.'},
+            {'log_date': '2026-10-27', 'description': 'Φετινή καταγραφή.'}])
+        s = self.db.lifelog_suggest('2026-10-28')
+        texts = [i['text'] for i in s['items']]
+        self.assertEqual(texts[0], 'Παρέλαση στη Λαμία.')
+        self.assertEqual(s['items'][0]['times'], 2)
+        self.assertEqual(sum('συνεδρίαση' in t for t in texts), 1)  # 7η/8η ενώνονται
+        self.assertNotIn('Δοξολογία.', texts)
+        self.assertNotIn('Φετινή καταγραφή.', texts)  # μόνο προηγούμενα σχολικά έτη
+        self.assertEqual([i['text'] for i in self.db.lifelog_suggest('2026-10-28', 'δοξολογ')['items']], ['Δοξολογία.'])
+        self.assertEqual(self.db.lifelog_years(), ['2024-2025', '2025-2026', '2026-2027'])

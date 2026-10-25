@@ -139,6 +139,9 @@ details.more2{border:1px solid var(--line);border-radius:10px;padding:0 14px;mar
 .lock{max-width:480px;margin:50px auto;text-align:center;padding:30px}.lock .ic{width:64px;height:64px;border-radius:18px;background:var(--brand-50);color:var(--brand);display:grid;place-items:center;margin:0 auto 12px}.lock .ic svg{width:30px;height:30px}
 .drop{border:2px dashed #C6D5D1;border-radius:var(--r);padding:28px;text-align:center;color:var(--muted);background:#FBFDFC}.drop.on{border-color:var(--brand);background:var(--brand-50)}
 .lle{display:grid;grid-template-columns:1fr 34px;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line2)}.lle:last-child{border-bottom:0}.lle p{margin:0;white-space:pre-wrap}
+.llf{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:20px;align-items:start}.llf.one{grid-template-columns:1fr}.llf textarea{min-height:340px}
+.sugg{background:#F8FAF9;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:min(560px,62vh)}.sugg #ll_sl{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.sg{position:relative;text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 30px 8px 10px;cursor:pointer;font-size:13px;line-height:1.4}.sg:hover{border-color:var(--brand);background:var(--brand-50)}.sg.used{opacity:.55}.sgm{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.sgm b{color:var(--warn)}.sgp{position:absolute;right:8px;top:8px;color:var(--brand)}
 .faq details{border-bottom:1px solid var(--line2);padding:4px 0}.faq details:last-child{border-bottom:0}.faq summary{cursor:pointer;padding:8px 0;font-weight:600}.faq p{margin:0 0 10px;color:#3D4A50}
 .dropall{position:fixed;inset:12px;border:3px dashed var(--brand);border-radius:16px;background:#2F6F73d0;color:#fff;display:none;place-items:center;font-size:18px;z-index:90;pointer-events:none}body.filedrag .dropall{display:grid}
 .catrow{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer}.catrow:hover{background:#F4F7F6}.catrow.on{background:var(--brand-50)}.catrow i{width:12px;height:12px;border-radius:4px}
@@ -163,7 +166,7 @@ const token='__TOKEN__',$=s=>document.querySelector(s),$$=s=>[...document.queryS
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let S=null,page='home';
 const ui={tab:'all',view:'list',f:{search:'',category:'Όλες',status:'Όλες',calendar:'Όλες',school_year:null},showF:false,month:null,rows:[],all:[],total:0,checked:new Set(),open:null,showGuide:true,
- gYear:null,gCat:'Όλες',gSel:new Set(),gItems:[],ll:{search:'',from:'',to:''},rep:{type:'all',period:'year',status:'Όλες',categories:null,include_internal:true},xtab:'export',scope:'year',stab:'school'};
+ gYear:null,gCat:'Όλες',gSel:new Set(),gItems:[],ll:{search:'',from:'',to:'',year:null},rep:{type:'all',period:'year',status:'Όλες',categories:null,include_internal:true},xtab:'export',scope:'year',stab:'school'};
 try{const m=JSON.parse(localStorage.getItem('pds.ui2')||'{}');if(m.page)page=m.page;if(m.view)ui.view=m.view;if(m.showGuide===false)ui.showGuide=false;}catch(e){}
 const remember=()=>{try{localStorage.setItem('pds.ui2',JSON.stringify({page,view:ui.view,showGuide:ui.showGuide}));}catch(e){}};
 
@@ -517,29 +520,79 @@ async function pLifelog(){
  if(L.protected&&!L.unlocked){c.innerHTML=`<div class="card lock"><div class="ic">${ico('lock')}</div><h2>Προστατευμένη ενότητα</h2><p class="desc">Πληκτρολογήστε τον κωδικό του Ημερολογίου Σχολικής Ζωής.</p>
   <div class="row" style="justify-content:center"><input type="password" id="l_pw" placeholder="Κωδικός" autocomplete="current-password" style="width:220px"><button class="btn primary" id="l_un">Ξεκλείδωμα</button></div></div>`;
   const un=async()=>{if(await call('lifelog/unlock',{password:$('#l_pw').value})){S.lifelog.unlocked=true;pLifelog();}};$('#l_un').onclick=un;$('#l_pw').onkeydown=e=>{if(e.key==='Enter')un();};setTimeout(()=>$('#l_pw')?.focus(),50);return;}
- c.innerHTML=`<div class="wrap"><div class="toolbar"><button class="btn primary" id="l_new">${ico('plus')}Νέα καταγραφή</button><input type="search" id="l_s" placeholder="Αναζήτηση…" value="${esc(ui.ll.search)}" style="width:220px">
+ if(!ui.ll.year)ui.ll.year=S.current_school_year;
+ c.innerHTML=`<div class="wrap"><div class="toolbar"><button class="btn primary" id="l_new">${ico('plus')}Νέα καταγραφή</button>
+  <select id="l_y" title="Σχολικό έτος"></select><input type="search" id="l_s" placeholder="Αναζήτηση…" value="${esc(ui.ll.search)}" style="width:200px">
   <label class="row small muted" style="gap:6px">Από <input type="date" id="l_f" value="${ui.ll.from}"></label><label class="row small muted" style="gap:6px">έως <input type="date" id="l_t" value="${ui.ll.to}"></label>
   <span class="right"></span><button class="btn" id="l_pr">${ico('print')}Εκτύπωση</button>${L.protected?`<button class="btn" id="l_lock">${ico('lock')}Κλείδωμα</button>`:''}<button class="btn icon ghost" id="l_more" title="Περισσότερα">${ico('dots')}</button></div>
   <div id="l_list"></div><div id="l_prev"></div></div>`;
  let t;$('#l_s').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{ui.ll.search=e.target.value;loadLL();},220);};
+ $('#l_y').onchange=e=>{ui.ll.year=e.target.value;loadLL();};
  $('#l_f').onchange=e=>{ui.ll.from=e.target.value;loadLL();};$('#l_t').onchange=e=>{ui.ll.to=e.target.value;loadLL();};
  $('#l_lock')&&($('#l_lock').onclick=async()=>{await call('lifelog/lock');S.lifelog.unlocked=false;pLifelog();});$('#l_new').onclick=()=>llForm(null);
- $('#l_pr').onclick=async()=>{const q={search:ui.ll.search,date_from:ui.ll.from,date_to:ui.ll.to};const j=await call('lifelog/report',q);if(j)showPreview('#l_prev',j,()=>api('lifelog/report',{...q,toolbar:true}));};
- $('#l_more').onclick=e=>menu(e.currentTarget,[{label:'Μεταφορά ολοκληρωμένων δράσεων',icon:'swap',run:llTransfer},{label:'Ρυθμίσεις κωδικού',icon:'gear',run:llSettings}]);
+ $('#l_pr').onclick=async()=>{const q=llQuery();const j=await call('lifelog/report',q);if(j)showPreview('#l_prev',j,()=>api('lifelog/report',{...q,toolbar:true}));};
+ $('#l_more').onclick=e=>menu(e.currentTarget,[{label:'Εισαγωγή από αρχείο Word ή Excel…',icon:'upload',run:async()=>{const f=await pickFile('.docx,.xlsx,.csv');if(f)llImport(f);}},
+  {label:'Μεταφορά ολοκληρωμένων δράσεων',icon:'swap',run:llTransfer},'-',{label:'Ρυθμίσεις κωδικού',icon:'gear',run:llSettings}]);
  await loadLL();}
+const llQuery=()=>({search:ui.ll.search,date_from:ui.ll.from,date_to:ui.ll.to,school_year:ui.ll.year==='Όλα'?'':ui.ll.year});
 async function llTransfer(){if(!await confirmBox('Οι δράσεις με κατάσταση «Ολοκληρώθηκε» που δεν έχουν ήδη μεταφερθεί θα γίνουν καταγραφές του Ημερολογίου.','Μεταφορά'))return;const j=await call('lifelog/transfer');if(j){toast(`Μεταφέρθηκαν ${plural(j.count,'καταγραφή','καταγραφές')}.`);loadLL();}}
-async function loadLL(){const j=await api('lifelog/list',{search:ui.ll.search,date_from:ui.ll.from,date_to:ui.ll.to});
+async function loadLL(){const j=await api('lifelog/list',llQuery());
+ const ys=[...new Set([...S.school_years,...j.years,ui.ll.year].filter(y=>y&&y!=='Όλα'))].sort().reverse();
+ const sel=$('#l_y');if(sel){sel.innerHTML=opt('Όλα','Όλα τα έτη',ui.ll.year)+ys.map(y=>opt(y,'Έτος '+y,ui.ll.year)).join('');sel.disabled=!!(ui.ll.from||ui.ll.to);sel.title=sel.disabled?'Ισχύει η περίοδος Από–έως':'Σχολικό έτος';}
  let html='',cur='';j.rows.slice().reverse().forEach(r=>{if(r.log_date!==cur){cur=r.log_date;html+=`<div class="mh">${longDate(r.log_date)}</div>`;}
   html+=`<div class="lle" data-l="${r.id}"><p>${esc(r.description)}</p><button class="more" data-lm="${r.id}" title="Ενέργειες">${ico('dots')}</button></div>`;});
- $('#l_list').innerHTML=j.rows.length?`<div class="list">${html}</div><div class="count">${plural(j.rows.length,'καταγραφή','καταγραφές')} · νεότερες πρώτα · διπλό κλικ για επεξεργασία</div>`:`<div class="list"><div class="empty">${ico('book')}<b>Καμία καταγραφή</b>${ui.ll.search||ui.ll.from||ui.ll.to?'Δεν βρέθηκαν καταγραφές με αυτά τα κριτήρια.':'Πατήστε «Νέα καταγραφή» ή μεταφέρετε τις ολοκληρωμένες δράσεις (μενού ⋯).'}</div></div>`;
+ const other=!j.rows.length&&j.years.length&&ui.ll.year!=='Όλα'&&!ui.ll.search&&!ui.ll.from&&!ui.ll.to;
+ $('#l_list').innerHTML=j.rows.length?`<div class="list">${html}</div><div class="count">${plural(j.rows.length,'καταγραφή','καταγραφές')} · νεότερες πρώτα · διπλό κλικ για επεξεργασία</div>`
+  :`<div class="list"><div class="empty">${ico('book')}<b>Καμία καταγραφή</b>${ui.ll.search||ui.ll.from||ui.ll.to?'Δεν βρέθηκαν καταγραφές με αυτά τα κριτήρια.':other?`Δεν υπάρχουν ακόμη καταγραφές για το ${esc(ui.ll.year)}. Υπάρχουν καταγραφές για: ${esc(j.years.join(', '))}.<br><br><button class="btn primary" id="l_first">${ico('plus')}Νέα καταγραφή</button>`
+   :'Πατήστε «Νέα καταγραφή». Αν κρατούσατε το Ημερολόγιο σε Word ή Excel, φέρτε τις παλιές καταγραφές με «Εισαγωγή από αρχείο»: θα σας προτείνονται κάθε χρόνο για να μη τις ξαναγράφετε.<br><br><button class="btn" id="l_imp">'+ico('upload')+'Εισαγωγή από αρχείο Word ή Excel…</button>'}</div></div>`;
+ $('#l_imp')&&($('#l_imp').onclick=async()=>{const f=await pickFile('.docx,.xlsx,.csv');if(f)llImport(f);});$('#l_first')&&($('#l_first').onclick=()=>llForm(null));
  const byId=id=>j.rows.find(r=>r.id===+id);
  $$('[data-l]').forEach(el=>el.ondblclick=()=>llForm(byId(el.dataset.l)));
  $$('[data-lm]').forEach(b=>b.onclick=e=>{const r=byId(b.dataset.lm);menu(e.currentTarget,[{label:'Επεξεργασία',icon:'edit',run:()=>llForm(r)},{label:'Διαγραφή',icon:'trash',danger:true,run:async()=>{
   if(!await confirmBox('Να διαγραφεί η καταγραφή;','Διαγραφή',true))return;const k=await call('lifelog/delete',{ids:[r.id]});if(k){toast('Η καταγραφή διαγράφηκε.',false,{label:'Αναίρεση',run:async()=>{if(await call('lifelog/undelete',{rows:k.rows},'Η διαγραφή αναιρέθηκε.'))loadLL();}});loadLL();}}}]);});}
+
+/* προσαρμογή κειμένου παλαιότερης καταγραφής στη νέα ημερομηνία: σχολικό έτος, ημερομηνίες, ημέρα εβδομάδας */
+function adaptText(text,srcIso,dstIso){
+ const sy=iso=>{const d=dt(iso);return d.getMonth()>=8?d.getFullYear():d.getFullYear()-1;};
+ const s0=sy(srcIso),delta=sy(dstIso)-s0;if(!delta&&srcIso===dstIso)return text;
+ const src=dt(srcIso),dst=dt(dstIso);
+ return text.replace(/(?:(Δευτέρα|Τρίτη|Τετάρτη|Πέμπτη|Παρασκευή|Σάββατο|Κυριακή)\s+)?(\d{1,2})\/(\d{1,2})\/(\d{4})(?![\d\/])|(?<![\d\/])(\d{4})([-‐\/])(\d{4})(?![\d\/])|(?<![\d\/.])(\d{4})(?![\d\/])/g,
+  (m,wd,d,mo,y,a,sep,b,lone)=>{
+   if(y){let nd;if(+d===src.getDate()&&+mo===src.getMonth()+1&&+y===src.getFullYear())nd=dst;else nd=new Date(+y+delta,+mo-1,+d);
+    const fmt=(n,w)=>String(n).padStart(w.length,'0');const out=`${fmt(nd.getDate(),d)}/${fmt(nd.getMonth()+1,mo)}/${nd.getFullYear()}`;return (wd?DOW[nd.getDay()]+' ':'')+out;}
+   if(a){if(+b===+a+1&&(+a===s0||+a===s0-1||+a===s0+1))return `${+a+delta}${sep}${+b+delta}`;return m;}
+   if(lone&&(+lone===s0||+lone===s0+1))return String(+lone+delta);return m;});}
+
 function llForm(r){const isNew=!r;r=r||{log_date:S.today,description:''};
- const d=modal(isNew?'Νέα καταγραφή':'Επεξεργασία καταγραφής',`<label class="field"><span>Ημερομηνία</span><input type="date" id="ll_d" value="${esc(r.log_date)}" style="width:190px"></label><label class="field"><span>Καταγραφή</span><textarea id="ll_t" rows="10" style="width:min(660px,85vw)" autofocus placeholder="Τι έγινε σήμερα στο σχολείο…">${esc(r.description)}</textarea></label>`,
- {onOk:async()=>{await api('lifelog/save',{entry:{id:isNew?null:r.id,log_date:$('#ll_d').value,description:$('#ll_t').value}});toast('Αποθηκεύτηκε.');loadLL();}});
- d.addEventListener('keydown',e=>{if(e.ctrlKey&&(e.key==='s'||e.key==='σ')){e.preventDefault();d.querySelector('[data-ok]').click();}});}
+ const d=modal(isNew?'Νέα καταγραφή':'Επεξεργασία καταγραφής',`<div class="llf"><div><label class="field"><span>Ημερομηνία</span><input type="date" id="ll_d" value="${esc(r.log_date)}" style="width:190px"></label>
+  <label class="field"><span>Καταγραφή</span><textarea id="ll_t" rows="14" autofocus placeholder="Τι έγινε σήμερα στο σχολείο…">${esc(r.description)}</textarea></label></div>
+  <aside class="sugg" id="ll_sg" hidden><div class="row" style="gap:6px"><b>Από προηγούμενα έτη</b><span class="hint" id="ll_sgn"></span></div>
+   <input type="search" id="ll_sq" placeholder="Αναζήτηση σε όλες τις παλιές καταγραφές…"><div class="hint" id="ll_sgh">Ό,τι γράψατε τέτοιες μέρες άλλες χρονιές. Πατήστε μια πρόταση για να μπει στην καταγραφή· η χρονιά και οι ημερομηνίες προσαρμόζονται αυτόματα.</div><div id="ll_sl"></div></aside></div>`,
+ {wide:'min(1180px,96vw)',onOk:async()=>{await api('lifelog/save',{entry:{id:isNew?null:r.id,log_date:$('#ll_d').value,description:$('#ll_t').value}});toast('Αποθηκεύτηκε.');loadLL();}});
+ d.addEventListener('keydown',e=>{if(e.ctrlKey&&(e.key==='s'||e.key==='σ')){e.preventDefault();d.querySelector('[data-ok]').click();}});
+ let tm,items=[];
+ const load=async()=>{let j;try{j=await api('lifelog/suggest',{date:$('#ll_d').value||S.today,search:$('#ll_sq').value});}catch(e){return;}
+  if(!j.has_history){$('#ll_sg').hidden=true;d.querySelector('.llf').classList.add('one');return;}
+  $('#ll_sg').hidden=false;items=j.items;const q=$('#ll_sq').value.trim();
+  $('#ll_sgn').textContent=j.total?`· ${j.total}`:'';$('#ll_sgh').hidden=!!q;
+  $('#ll_sl').innerHTML=items.length?items.map((it,i)=>{const off=it.offset===0?'ίδια μέρα':(Math.abs(it.offset)+(Math.abs(it.offset)===1?' μέρα ':' μέρες ')+(it.offset<0?'νωρίτερα':'αργότερα'));
+   return `<button type="button" class="sg" data-sg="${i}" title="Προσθήκη στην καταγραφή"><span class="sgm">${disp(it.log_date)} · ${q?esc(it.school_year):off}${it.times>1?` · <b>${it.times} φορές</b>`:''}</span>${esc(it.text)}<span class="sgp">${ico('plus','width:15px;height:15px')}</span></button>`;}).join('')
+   :`<p class="hint">${q?'Δεν βρέθηκε κάτι με αυτή την αναζήτηση.':'Δεν υπάρχουν καταγραφές άλλων ετών γύρω από αυτή την ημερομηνία. Δοκιμάστε την αναζήτηση.'}</p>`;
+  $$('[data-sg]').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.sg],ta=$('#ll_t');const txt=adaptText(it.text,it.log_date,$('#ll_d').value||S.today);
+   const cur=ta.value.replace(/\s+$/,'');ta.value=cur?cur+'\n'+txt:txt;ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);ta.scrollTop=ta.scrollHeight;b.classList.add('used');});};
+ $('#ll_d').addEventListener('change',load);$('#ll_sq').oninput=()=>{clearTimeout(tm);tm=setTimeout(load,220);};load();}
+
+async function llImport(file){
+ if(!/\.(docx|xlsx|csv|txt)$/i.test(file.name))return toast(/\.pdf$/i.test(file.name)?'Τα PDF δεν διαβάζονται. Επιλέξτε το αρχικό αρχείο Word (.docx) ή Excel.':'Επιλέξτε αρχείο Word (.docx), Excel (.xlsx) ή CSV.',true);
+ const data=await readFile(file);const p=await call('lifelog/import/preview',{name:file.name,data});if(!p)return;
+ const body=`${p.count?`<p style="margin-top:0">Θα εισαχθούν <b>${plural(p.count,'καταγραφή','καταγραφές')}</b> από το «${esc(file.name)}»: ${p.years.map(y=>`${esc(y.year)} (${y.count})`).join(', ')}.</p>`:'<div class="note bad">Δεν υπάρχουν νέες καταγραφές για εισαγωγή.</div>'}
+  ${p.duplicates?`<div class="note">${p.duplicates===1?'1 καταγραφή υπάρχει ήδη και θα παραλειφθεί.':`${p.duplicates} καταγραφές υπάρχουν ήδη και θα παραλειφθούν.`}</div>`:''}
+  ${p.errors.length?`<div class="note bad"><b>Δεν θα εισαχθούν:</b><br>${p.errors.slice(0,15).map(esc).join('<br>')}${p.errors.length>15?'<br>…':''}</div>`:''}
+  ${p.count?`<div class="list" style="max-height:46vh;overflow:auto">${p.records.map(r=>{const d=dt(r.log_date);return `<div class="it" style="--c:var(--brand);grid-template-columns:54px 1fr;cursor:default"><div class="dbox"><b>${d.getDate()}</b><small>${MONS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}</small></div><div style="white-space:pre-wrap;font-size:13px">${esc(r.description)}</div></div>`;}).join('')}</div>${p.count>p.records.length?`<p class="hint">Εμφανίζονται οι πρώτες ${p.records.length}.</p>`:''}`:''}
+  <p class="hint">Το αρχείο χρειάζεται πίνακα με στήλη «Ημερομηνία» και στήλη «Καταγραφή» (ή «Θέμα» / «Περιγραφή»). Γραμμές πίνακα που συνεχίζουν σε νέα σελίδα ενώνονται αυτόματα.</p>`;
+ modal('Εισαγωγή καταγραφών',body,{wide:'min(860px,95vw)',ok:p.count?`Εισαγωγή ${plural(p.count,'καταγραφής','καταγραφών')}`:'',cancel:p.count?'Ακύρωση':'Κλείσιμο',onOk:p.count?async()=>{
+  const r=await api('lifelog/import/apply',{name:file.name,data});ui.ll.year='Όλα';ui.ll.from=ui.ll.to=ui.ll.search='';
+  toast(`Εισήχθησαν ${plural(r.imported,'καταγραφή','καταγραφές')}. Θα σας προτείνονται όταν γράφετε νέες καταγραφές.`);if(page==='lifelog')pLifelog();else go('lifelog');}:null});}
 function llSettings(){const L=S.lifelog;
  modal('Κωδικός Ημερολογίου Σχολικής Ζωής',`<label class="sw"><span class="t"><b>Πρόσβαση με κωδικό</b><small>Η ενότητα ζητά κωδικό σε κάθε άνοιγμα της εφαρμογής.</small></span><input type="checkbox" id="ls_p" ${L.protected?'checked':''}></label>
   <h3 style="font-size:14px;margin:14px 0 8px">Αλλαγή κωδικού <span class="hint">(προαιρετικά)</span></h3><div style="display:grid;gap:8px;max-width:320px"><input type="password" id="ls_1" placeholder="Νέος κωδικός" autocomplete="new-password"><input type="password" id="ls_2" placeholder="Επιβεβαίωση" autocomplete="new-password"></div>
@@ -624,6 +677,7 @@ function drawImport(){
  $('#t_tpl').onclick=async()=>{const j=await call('template');if(j)saveFile(b64toBlob(j.data,j.mime),j.filename);};
  const dz=$('#t_drop');dz.ondragover=e=>{e.preventDefault();dz.classList.add('on');};dz.ondragleave=()=>dz.classList.remove('on');dz.ondrop=e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('on');document.body.classList.remove('filedrag');const f=e.dataTransfer.files[0];if(f)importFile(f);};}
 async function importFile(file){
+ if(page==='lifelog'&&(!S.lifelog.protected||S.lifelog.unlocked)&&/\.(docx|xlsx|csv)$/i.test(file.name))return llImport(file);
  if(/\.db$/i.test(file.name))return restoreFromFile(file);if(/\.zip$/i.test(file.name))return updateFromFile(file);
  if(!/\.(xlsx|csv|txt)$/i.test(file.name))return toast('Επιλέξτε αρχείο .xlsx ή .csv.',true);
  const data=await readFile(file);const p=await call('import/preview',{name:file.name,data});if(!p)return;
