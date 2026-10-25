@@ -1,0 +1,20 @@
+# Δεδομένα σχολείου (προσωπικά δεδομένα): ΠΟΤΕ στο αποθετήριο
+data/
+Dedomena/
+backups/
+exports/
+Shared/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+# Παραγόμενα
+__pycache__/
+*.pyc
+dist/
+build/
+runtime/
+runtime-x64/
+runtime-x86/
+versions/
+installer/Greek.isl

@@ -1,0 +1,683 @@
+<!doctype html><html lang="el"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Πρόγραμμα Δράσεων Σχολείου</title>
+<link rel="icon" href="/logo.png">
+<style>
+:root{--primary:#2F6F73;--primary2:#24504F;--primary-dark:#1E4446;--primary-soft:#E8F2F1;--gold:#D4A017;--gold-soft:#FFF4CC;--bg:#F4F5F2;--surface:#FFFFFF;--line:#DDE4E2;--line2:#EAEFED;
+ --text:#2B2F33;--muted:#5F6B76;--faint:#8A959B;--head:#34495E;--danger:#B83A2B;--danger-soft:#FBE9E6;--ok:#3F7F48;--ok-soft:#E5F2E6;--internal:#8A4B00;--internal-soft:#FFEBD2;--focus:#1F6FD1;
+ --font:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:13.5px/1.45 var(--font);color:var(--text);background:var(--bg);overflow:hidden;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.app{display:grid;grid-template-columns:228px 1fr;height:100vh}
+/* πλευρική στήλη */
+.side{background:linear-gradient(180deg,var(--primary2),var(--primary-dark));color:#E3EEEC;display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;gap:10px;align-items:center;padding:14px 14px 12px;border-bottom:1px solid #ffffff1c}.brand img{width:40px;height:40px;border-radius:50%;background:#fff;flex-shrink:0}
+.brand b{display:block;font-size:13.5px;font-weight:600;color:#fff;line-height:1.25}.brand span{font-size:11.5px;color:#B8D0CC}
+.nav{list-style:none;margin:8px 0;padding:0 8px;flex:1;overflow:auto}
+.nav button{display:grid;grid-template-columns:22px 1fr auto;gap:9px;align-items:center;width:100%;border:0;background:none;color:#E3EEEC;padding:8px 9px;border-radius:7px;cursor:pointer;text-align:left}
+.nav button:hover{background:#ffffff14}.nav button.on{background:#ffffff24;color:#fff;box-shadow:inset 3px 0 0 var(--gold)}
+.nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.nav .badge{font-size:11px;padding:0 7px;border-radius:9px;background:var(--gold);color:#3B2F00;font-weight:700}
+.nav .sep{height:1px;background:#ffffff1c;margin:6px 6px}
+.sidefoot{padding:10px 14px 12px;border-top:1px solid #ffffff1c;font-size:11.5px;color:#B8D0CC;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.sidefoot button{background:none;border:1px solid #ffffff38;color:#E3EEEC;border-radius:5px;padding:3px 9px;cursor:pointer}.sidefoot button:hover{background:#ffffff14}
+.sidefoot .newver{background:var(--gold);border-color:var(--gold);color:#2E2400;font-weight:700}
+/* κύρια περιοχή */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:10px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line);min-height:56px}
+.top h1{font-size:19px;font-weight:600;margin:0;color:var(--head);white-space:nowrap}.top .sub{color:var(--muted);font-size:12.5px;margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.content{flex:1;overflow:auto;padding:16px 20px 28px;min-height:0}
+.wrap{max-width:1320px}
+/* στοιχεία */
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid #C9D6D3;background:var(--surface);border-radius:7px;padding:6px 13px;cursor:pointer;white-space:nowrap;color:var(--primary);font-weight:600}
+.btn:hover:not(:disabled){background:var(--primary-soft)}.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn.primary:hover:not(:disabled){background:var(--primary2)}
+.btn.gold{background:var(--gold);border-color:#B98B10;color:#fff}.btn.gold:hover:not(:disabled){background:#BF9014}
+.btn.okb{background:var(--ok);border-color:var(--ok);color:#fff}.btn.okb:hover:not(:disabled){background:#356B3D}
+.btn.danger{color:var(--danger);border-color:#E3B9B2}.btn.danger:hover:not(:disabled){background:var(--danger-soft)}
+.btn.small{padding:3px 9px;font-size:12px;font-weight:600}.btn.link{border:0;background:none;padding:0 2px;text-decoration:underline;font-weight:500}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+input[type=text],input[type=search],input[type=password],input[type=date],input[type=time],input[type=number],input:not([type]),select,textarea{border:1px solid #C4CFCC;border-radius:6px;padding:6px 8px;background:#fff;max-width:100%}
+textarea{resize:vertical;width:100%}input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);vertical-align:-3px;margin:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.grow{flex:1}.muted{color:var(--muted)}.small{font-size:12px}.right{margin-left:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.card h2{font-size:15.5px;font-weight:650;margin:0 0 4px;color:var(--primary)}.card h3{font-size:13.5px;font-weight:650;margin:16px 0 6px;color:var(--head)}.card>p.muted{margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px}.grid2>.card{margin:0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}.field>span{font-size:12px;color:var(--muted);font-weight:600}.field input,.field select,.field textarea{width:100%}.field .check input{width:16px;flex-shrink:0}.field .check{font-weight:400;color:var(--text);font-size:13.5px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.check{display:flex;gap:8px;align-items:flex-start;padding:4px 0;cursor:pointer}.check input{margin-top:2px}.check small{display:block;color:var(--muted)}
+.note{background:var(--gold-soft);border:1px solid #EBD58A;border-radius:8px;padding:9px 13px;margin:8px 0}.note.info{background:var(--primary-soft);border-color:#C3DBD8}.note.bad{background:var(--danger-soft);border-color:#E7B9B1}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:12px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.st-0{background:#FFF4CC;color:#7A5A00}.st-1{background:var(--ok-soft);color:var(--ok)}.st-2{background:var(--danger-soft);color:var(--danger)}.st-3{background:#ECEFF3;color:#4B5865}
+.chip.int{background:var(--internal-soft);color:var(--internal)}
+.seg{display:inline-flex;border:1px solid #C9D6D3;border-radius:7px;overflow:hidden;background:#fff}.seg button{border:0;background:none;padding:6px 13px;cursor:pointer;border-right:1px solid #C9D6D3;color:var(--primary);font-weight:600}.seg button:last-child{border-right:0}.seg button.on{background:var(--primary);color:#fff}.seg svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:3px}
+/* πίνακες */
+.tblwrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:auto}
+table{border-collapse:collapse}.tbl{width:100%}.tbl th{font-size:12px;font-weight:650;color:var(--head);text-align:left;padding:8px 9px;border-bottom:2px solid var(--primary);background:#EEF3F2;position:sticky;top:0;z-index:1;white-space:nowrap}
+.tbl td{padding:7px 9px;border-bottom:1px solid var(--line2);vertical-align:top;overflow-wrap:break-word}.tbl tr.click{cursor:pointer}.tbl tr.click:hover td{background:#F4F8F7}
+.tbl tr.sel td{background:#FFF7DA!important}.tbl tr.int td{background:#FFF6EA}.tbl tr.done td{color:#56615C}.tbl tr.cancel td{color:var(--faint);text-decoration:line-through;text-decoration-color:#0003}
+.tbl td.c,.tbl th.c{text-align:center;width:34px}.tbl .date{white-space:nowrap}.tbl .date small{display:block;color:var(--faint);font-size:11px}.tbl .desc{color:var(--muted);font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tbl td.num{text-align:right}.tbl .ttl{font-weight:600}.tbl td.cat{font-size:12.5px;min-width:120px}.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* σελίδα δράσεων */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.toolbar .search{width:280px}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px}.filters label{display:flex;gap:6px;align-items:center;color:var(--muted);font-weight:600}.filters select{max-width:250px}
+.bulkbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#FFF7DA;border:1px solid #EBD58A;border-radius:8px;padding:7px 12px;margin-bottom:10px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px;align-items:start}.split>*{min-width:0}
+.details{position:sticky;top:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.details h2{font-size:15px;margin:0 0 6px;color:var(--head)}.details .meta{font-size:12.5px;color:var(--muted);display:grid;gap:3px;margin-bottom:10px}.details .meta b{color:var(--text);font-weight:600}
+.details .descr{white-space:pre-wrap;font-size:12.5px;background:#FAFBFA;border:1px solid var(--line2);border-radius:7px;padding:8px 10px;max-height:220px;overflow:auto;margin-bottom:10px}
+.details .acts{display:grid;gap:6px}.details .acts .btn{justify-content:center}
+.count{color:var(--muted);font-size:12px;padding:6px 2px}
+/* μηνιαία προβολή */
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.calhead{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}.calhead b{font-size:15px;color:var(--head);min-width:170px;text-align:center}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.calgrid .dow{background:#EEF3F2;font-size:12px;font-weight:650;color:var(--head);padding:5px 8px;border-bottom:1px solid var(--line)}
+.day{min-height:104px;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:4px 5px;position:relative}.day:nth-child(7n){border-right:0}
+.day.out{background:#FAFBFA}.day.out .dn{color:#B7C0BD}.day.we{background:#FBFBF8}.day.today .dn{background:var(--primary);color:#fff;border-radius:10px;padding:0 7px}
+.day .dn{font-size:12px;font-weight:650;color:var(--muted);display:inline-block;margin-bottom:3px}.day .add{position:absolute;right:4px;top:3px;border:0;background:none;color:var(--primary);font-weight:700;cursor:pointer;opacity:0;font-size:15px;line-height:1}.day:hover .add{opacity:.8}
+.ev{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;width:100%;text-align:left;border:0;border-left:3px solid var(--primary);background:var(--primary-soft);border-radius:4px;padding:2px 5px;margin-bottom:3px;font-size:11.5px;line-height:1.3;cursor:pointer;overflow:hidden}
+.ev.s1{border-color:var(--ok);background:var(--ok-soft)}.ev.s2{border-color:var(--danger);background:var(--danger-soft);text-decoration:line-through}.ev.s3{border-color:#7A8794;background:#ECEFF3}.ev.int{border-color:var(--internal);background:var(--internal-soft)}.ev.sel{outline:2px solid var(--gold)}
+.ev.guide{border-color:#B7C0BD;border-left-style:dashed;background:#fff;color:var(--muted);font-style:italic}
+/* αρχική */
+.hero{display:flex;gap:18px;align-items:center;background:linear-gradient(110deg,#FFFFFF 40%,#EAF4F2);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin-bottom:14px}
+.hero h2{margin:0 0 4px;font-size:22px;color:var(--head)}.hero p{margin:0;color:var(--muted)}.hero .bar{width:90px;height:3px;background:var(--gold);margin-top:10px;border-radius:2px}.hero img{width:74px;height:74px;margin-left:auto}
+.stat{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;cursor:pointer}.stat:hover{border-color:#B8CFCB}
+.stat .ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;flex-shrink:0}.stat .ic svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.stat b{display:block;font-size:26px;line-height:1.1}.stat span{font-size:12.5px;color:var(--muted)}.stat strong{font-size:13px;color:var(--head)}
+.upl{display:flex;flex-direction:column;gap:7px}.upi{display:flex;gap:12px;align-items:center;border:1px solid var(--line2);border-radius:9px;padding:7px 10px;cursor:pointer;background:#fff}.upi:hover{border-color:#B8CFCB;background:#FBFDFC}
+.dbox{width:50px;flex-shrink:0;text-align:center;background:var(--primary-soft);color:var(--primary);border-radius:8px;padding:4px 0;line-height:1.1}.dbox b{display:block;font-size:17px}.dbox small{font-size:10.5px;font-weight:700}.dbox.int{background:var(--internal-soft);color:var(--internal)}
+.upi .t{font-weight:600}.upi .m{font-size:12px;color:var(--muted)}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick .btn{justify-content:center;padding:9px 8px}
+.glance{display:grid;gap:6px;margin-top:12px}.glance button{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line2);background:#FAFCFB;border-radius:7px;padding:6px 10px;cursor:pointer;text-align:left}.glance button:hover{border-color:#B8CFCB}
+.glance b{min-width:34px;text-align:center;border-radius:6px;padding:1px 6px}
+/* διάλογοι */
+dialog{border:0;border-radius:12px;box-shadow:0 18px 60px #0005;padding:0;max-width:min(1000px,95vw);width:max-content;min-width:440px;max-height:92vh}
+dialog::backdrop{background:#1E2A3266}.dlg{display:flex;flex-direction:column;max-height:92vh}.dlg header{padding:15px 20px 8px;font-size:17px;font-weight:650;color:var(--head)}
+.dlg .body{padding:4px 20px 12px;overflow:auto}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:11px 20px 15px;border-top:1px solid var(--line2);align-items:center}
+.sect{border:1px solid var(--line);border-radius:9px;padding:10px 13px;margin-bottom:10px}.sect>b{display:block;color:var(--primary);margin-bottom:8px;font-size:13px}
+.checklist{max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:7px;padding:4px 10px}.checklist label{display:flex;gap:8px;align-items:center;padding:3px 0}
+.fsl{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:8px;min-width:min(600px,80vw)}.fsl button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 10px;cursor:pointer}.fsl button:hover{background:var(--primary-soft)}
+.toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:6px;z-index:50}.toast{background:#22302E;color:#fff;border-radius:8px;padding:9px 15px;box-shadow:0 6px 20px #0003;max-width:460px;white-space:pre-line}.toast.bad{background:var(--danger)}
+.preview{width:100%;height:calc(100vh - 230px);min-height:460px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.lock{max-width:560px;margin:40px auto;text-align:center}.lock svg{width:54px;height:54px;stroke:var(--primary);fill:none;stroke-width:1.6}
+.drop{border:2px dashed #B8CFCB;border-radius:10px;padding:22px;text-align:center;color:var(--muted);background:#FBFDFC}.drop.on{border-color:var(--primary);background:var(--primary-soft)}
+.catlist{border:1px solid var(--line);border-radius:8px;overflow:hidden}.catlist div{display:flex;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line2);cursor:pointer}.catlist div:last-child{border-bottom:0}.catlist div.on{background:#FFF7DA}.catlist div:hover{background:#F4F8F7}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11.5px;background:#fff}
+.dropall{position:fixed;inset:12px;border:3px dashed var(--gold);border-radius:14px;background:#24504Fcc;color:#fff;display:none;place-items:center;font-size:18px;z-index:90;pointer-events:none}body.filedrag .dropall{display:grid}
+@media (max-width:1100px){.split{grid-template-columns:1fr}.details{position:static}.grid3{grid-template-columns:1fr}}
+@media print{.side,.top{display:none}}
+</style>
+<div class="app">
+<aside class="side">
+ <div class="brand"><img src="/logo.png" alt=""><div><b id="sname">Πρόγραμμα Δράσεων Σχολείου</b><span id="syear"></span></div></div>
+ <ul class="nav" id="nav"></ul>
+ <div class="sidefoot"><span>έκδοση __VERSION__</span><button id="newver" class="newver" hidden>Νέα έκδοση</button><button id="exit" title="Κλείσιμο εφαρμογής">Έξοδος</button></div>
+</aside>
+<div class="main"><div class="top"><h1 id="title"></h1><span class="sub" id="subtitle"></span><span id="topact"></span></div><div class="content" id="content"></div></div>
+</div>
+<dialog id="dialog"></dialog><dialog id="dialog2"></dialog><div class="toasts" id="toasts"></div><div class="dropall" id="dropall">Αφήστε το αρχείο εδώ</div>
+<script>
+'use strict';
+const token='__TOKEN__',$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null,page='home';
+const ui={filters:{search:'',category:'Όλες',status:'Όλες',calendar:'Όλες',school_year:null,special:''},view:'list',month:null,sel:null,checked:new Set(),rows:[],total:0,
+ guideYear:null,guideCat:'Όλες',guideSel:new Set(),guideItems:[],llSearch:'',llFrom:'',llTo:'',rep:{type:'all',status:'Όλες',category:'Όλες',include_internal:true,categories:null}};
+try{const m=JSON.parse(localStorage.getItem('pds.ui')||'{}');if(m.page)page=m.page;if(m.view)ui.view=m.view;if(m.filters)Object.assign(ui.filters,m.filters,{search:'',special:''});}catch(e){}
+function remember(){try{localStorage.setItem('pds.ui',JSON.stringify({page,view:ui.view,filters:ui.filters}));}catch(e){}}
+
+/* ---------- επικοινωνία ---------- */
+async function api(path,data={}){let r;try{r=await fetch('/api/'+path,{method:'POST',headers:{'X-App-Token':token,'Content-Type':'application/json'},body:JSON.stringify(data)});}
+ catch(e){throw Error('Η επικοινωνία με την εφαρμογή απέτυχε. Είναι ανοικτή;');}
+ let j={};try{j=await r.json();}catch(e){}
+ if(!r.ok){if(r.status===423&&page==='lifelog'&&path!=='lifelog/unlock'){S.lifelog.unlocked=false;render();}throw Error(j.error||'Σφάλμα επικοινωνίας ('+r.status+').');}return j;}
+async function call(path,data,done){try{let j=await api(path,data);if(done)toast(done);return j;}catch(e){toast(e.message,true);return null;}}
+async function refreshState(){S=await api('state');}
+function toast(t,bad){let el=document.createElement('div');el.className='toast'+(bad?' bad':'');el.textContent=t;$('#toasts').append(el);setTimeout(()=>el.remove(),bad?7000:3200);}
+const b64toBlob=(b,m)=>{let s=atob(b),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return new Blob([a],{type:m||'application/octet-stream'});};
+async function saveFile(blob,name){
+ if(window.showSaveFilePicker){try{let ext=name.split('.').pop();let h=await showSaveFilePicker({suggestedName:name,types:[{description:ext.toUpperCase(),accept:{[blob.type.split(';')[0]||'application/octet-stream']:['.'+ext]}}]});
+  let w=await h.createWritable();await w.write(blob);await w.close();toast('Αποθηκεύτηκε: '+h.name);return true;}catch(e){if(e.name==='AbortError')return false;}}
+ let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);toast('Το αρχείο αποθηκεύτηκε στις Λήψεις: '+name);return true;}
+function readFile(file){return new Promise((res,rej)=>{let fr=new FileReader();fr.onload=()=>res(fr.result.split(',')[1]||'');fr.onerror=()=>rej(Error('Το αρχείο δεν διαβάστηκε.'));fr.readAsDataURL(file);});}
+function pickFile(accept){return new Promise(res=>{let i=document.createElement('input');i.type='file';i.accept=accept;i.onchange=()=>res(i.files[0]||null);i.click();});}
+
+/* ---------- διάλογοι ---------- */
+function modal(title,body,{ok='Αποθήκευση',onOk=null,cancel='Ακύρωση',wide=false,extra='',id='dialog',okClass='primary'}={}){let d=$('#'+id);
+ d.innerHTML=`<form method="dialog" class="dlg" onsubmit="return false"><header>${esc(title)}</header><div class="body">${body}</div><footer>${extra}<span class="grow"></span>${cancel?`<button type="button" class="btn" data-x>${esc(cancel)}</button>`:''}${onOk?`<button type="submit" class="btn ${okClass}" data-ok>${esc(ok)}</button>`:''}</footer></form>`;
+ d.style.width=wide===true?'min(980px,95vw)':(wide||'');d.showModal();d.querySelector('[data-x]')?.addEventListener('click',()=>d.close());
+ if(onOk)d.querySelector('[data-ok]').onclick=async e=>{e.preventDefault();let b=e.currentTarget;b.disabled=true;try{if(await onOk(d)!==false)d.close();}catch(err){toast(err.message,true);}finally{b.disabled=false;}};
+ setTimeout(()=>d.querySelector('[autofocus]')?.focus(),30);return d;}
+function confirmBox(text,okLabel='Συνέχεια',danger=false){return new Promise(res=>{let done=false;let d=modal('Επιβεβαίωση',`<div style="max-width:540px;white-space:pre-line">${text}</div>`,{ok:okLabel,id:'dialog2',okClass:danger?'danger':'primary',onOk:()=>{done=true;res(true);}});d.addEventListener('close',()=>{if(!done)res(false);},{once:true});});}
+const opt=(v,t,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(t)}</option>`;
+
+/* ---------- βοηθητικά ---------- */
+const DOW=['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'],DOW3=['Κυρ','Δευ','Τρί','Τετ','Πέμ','Παρ','Σάβ'];
+const MON=['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const MONS=['ΙΑΝ','ΦΕΒ','ΜΑΡ','ΑΠΡ','ΜΑΪ','ΙΟΥΝ','ΙΟΥΛ','ΑΥΓ','ΣΕΠ','ΟΚΤ','ΝΟΕ','ΔΕΚ'];
+const dt=iso=>{let [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);};
+const isoOf=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const disp=iso=>iso?iso.split('-').reverse().join('/'):'';
+const dowOf=iso=>DOW3[dt(iso).getDay()];
+const stIdx=s=>Math.max(0,S.statuses.indexOf(s));
+const statusChip=s=>`<span class="chip st-${stIdx(s)}">${esc(s)}</span>`;
+const SHORT={'Προγραμματισμένη':'● Προγρ.','Ολοκληρώθηκε':'✓ Ολοκλ.','Ακυρώθηκε':'× Ακυρ.','Σε εκκρεμότητα':'! Εκκρ.'};
+const statusShort=s=>`<span class="chip st-${stIdx(s)}" title="${esc(s)}">${esc(SHORT[s]||s)}</span>`;
+const catLabel=c=>{let cf=S.category_config[c]||{};let i=cf.icon||(cf.internal?'🔒':'');return (i?i+' ':'')+c;};
+const timeText=r=>r.start_time?(r.start_time+(r.end_time?'–'+r.end_time:'')):'';
+const plural=(n,one,many)=>n+' '+(n===1?one:many);
+const feat=k=>!!S.features[k];
+
+/* ---------- εικονίδια ---------- */
+const I={home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+guide:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6"/>',
+book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6M9 11h6"/>',
+print:'<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
+swap:'<path d="M4 8h14l-4-4M20 16H6l4 4"/>',
+shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.4 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.5 13H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7.4l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 3.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 20.5 10H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>',
+help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5v.01"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',check:'<path d="m5 12 5 5L20 7"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'};
+const svg=(k,extra='')=>`<svg viewBox="0 0 24 24" ${extra}>${I[k]}</svg>`;
+
+/* ---------- πλαίσιο ---------- */
+const PAGES=[['home','Αρχική','home'],['actions','Δράσεις','cal'],['guide','Οδηγός Ημερών','guide'],['lifelog','Ημερολόγιο Σχ. Ζωής','book'],'-',
+ ['reports','Εκτυπώσεις','print'],['transfer','Εισαγωγή / Εξαγωγή','swap'],['backups','Δεδομένα & αντίγραφα','shield'],['settings','Ρυθμίσεις','gear'],['help','Οδηγίες','help']];
+const TITLES={home:'Αρχική',actions:'Διαχείριση δράσεων',guide:'Οδηγός Ημερών & Επετείων',lifelog:'Ημερολόγιο Σχολικής Ζωής',reports:'Εκτυπώσεις / Αναφορές',transfer:'Εισαγωγή & Εξαγωγή',backups:'Δεδομένα & αντίγραφα ασφαλείας',settings:'Ρυθμίσεις εφαρμογής',help:'Οδηγίες / Πληροφορίες'};
+function renderFrame(){
+ $('#sname').textContent=S.school_name;$('#syear').textContent='Σχολικό έτος '+S.current_school_year;
+ $('#nav').innerHTML=PAGES.map(p=>p==='-'?'<li class="sep"></li>':`<li><button data-page="${p[0]}" class="${p[0]===page?'on':''}">${svg(p[2])}<span>${p[1]}</span>${p[0]==='lifelog'&&S.lifelog.protected?`<span title="Προστατευμένη ενότητα" style="opacity:.7">${S.lifelog.unlocked?'':'🔒'}</span>`:''}</button></li>`).join('');
+ $$('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));
+ $('#title').textContent=TITLES[page];$('#subtitle').textContent=S.school_name+' • '+new Date().toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ $('#newver').hidden=!S.update;if(S.update)$('#newver').title='Διαθέσιμη η έκδοση '+S.update.version;$('#topact').innerHTML='';
+ document.title=S.school_name+' – Πρόγραμμα Δράσεων';}
+async function go(p,keep){page=p;remember();if(!keep){ui.sel=null;}await render();$('#content').scrollTop=0;}
+async function render(){renderFrame();const f={home:pHome,actions:pActions,guide:pGuide,lifelog:pLifelog,reports:pReports,transfer:pTransfer,backups:pBackups,settings:pSettings,help:pHelp}[page]||pHome;
+ try{await f();}catch(e){$('#content').innerHTML=`<div class="note bad">${esc(e.message)}</div>`;}}
+
+/* ================================================================ Αρχική */
+async function pHome(){
+ const D=await api('dashboard');let c=$('#content');
+ const first=S.first_run&&!D.total;
+ c.innerHTML=`<div class="wrap">
+ <div class="hero"><div><h2>Καλωσορίσατε! 👋</h2><p>Οργανώστε και παρακολουθήστε τις δράσεις του σχολείου σας.</p><div class="bar"></div></div><img src="/logo.png" alt=""></div>
+ ${first?`<div class="card" style="border-color:#EBD58A;background:#FFFCF0"><h2>Πρώτα βήματα</h2><p class="muted">Η βάση δεδομένων είναι κενή. Ξεκινήστε με έναν από τους παρακάτω τρόπους:</p>
+  <div class="row"><button class="btn primary" id="f_old">Μεταφορά δεδομένων από την παλιά έκδοση (v1.x)</button><button class="btn" id="f_name">Όνομα σχολείου</button><button class="btn" id="f_guide">Δράσεις από τον Οδηγό Ημερών</button><button class="btn" id="f_imp">Εισαγωγή από Excel / CSV</button></div>
+  <p class="small muted" style="margin:10px 0 0">Από την παλιά έκδοση επιλέξτε το αρχείο <b>school_actions.db</b> που βρίσκεται στον φάκελο <b>data</b> (ή <b>Shared\\data</b>) της παλιάς εφαρμογής. Αν η παλιά εφαρμογή ήταν σε κοινόχρηστο φάκελο, μπορείτε εναλλακτικά να συνδέσετε απευθείας εκείνον τον φάκελο από «Δεδομένα & αντίγραφα».</p></div>`:''}
+ ${D.overdue?`<div class="note"><b>${plural(D.overdue,'δράση','δράσεις')}</b> με παρελθούσα ημερομηνία δεν έχουν σημειωθεί ως ολοκληρωμένες ή ακυρωμένες. <button class="btn link" id="h_over">Προβολή</button></div>`:''}
+ <div class="grid3" style="margin-bottom:14px">
+  <div class="stat" data-flt="all"><div class="ic" style="background:var(--primary)">${svg('list')}</div><div><strong>Σύνολο δράσεων</strong><b style="color:var(--primary)">${D.total}</b><span>Όλες οι καταχωρισμένες δράσεις</span></div></div>
+  <div class="stat" data-flt="upcoming"><div class="ic" style="background:var(--gold)">${svg('cal')}</div><div><strong>Προσεχείς</strong><b style="color:#A87D06">${D.upcoming30}</b><span>Τις επόμενες 30 ημέρες (σύνολο προσεχών: ${D.upcoming})</span></div></div>
+  <div class="stat" data-flt="done"><div class="ic" style="background:var(--ok)">${svg('check')}</div><div><strong>Ολοκληρωμένες</strong><b style="color:var(--ok)">${D.done}</b><span>Δράσεις που ολοκληρώθηκαν</span></div></div>
+ </div>
+ <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px">
+  <div class="card" style="margin:0"><div class="row"><h2>Προσεχείς δράσεις</h2><button class="btn small right" data-flt="upcoming">Προβολή όλων →</button></div>
+   <p class="muted small" style="margin:0 0 10px">Με βάση τη σημερινή ημερομηνία. Κλικ για άνοιγμα.</p>
+   <div class="upl">${D.next.length?D.next.map(r=>{let d=dt(r.action_date);return `<div class="upi" data-open="${r.id}"><div class="dbox ${r.internal?'int':''}"><b>${String(d.getDate()).padStart(2,'0')}</b><small>${MONS[d.getMonth()]}</small></div>
+    <div class="grow" style="min-width:0"><div class="t">${r.milestone?'📌 ':''}${esc(r.title)}</div><div class="m">${esc([DOW[d.getDay()],timeText(r),r.class_group,r.location].filter(Boolean).join(' • '))}${r.internal?' • 🔒 Εσωτερικής χρήσης':''}</div></div>${statusChip(r.status)}</div>`;}).join(''):`<div class="empty">${D.total?'Δεν υπάρχουν προσεχείς δράσεις.':'Δεν υπάρχουν ακόμη καταχωρισμένες δράσεις.'}</div>`}</div></div>
+  <div class="card" style="margin:0"><h2>⚡ Γρήγορες ενέργειες</h2>
+   <div class="quick" style="margin-top:10px"><button class="btn primary" id="q_new">${svg('plus')}Νέα δράση</button><button class="btn" id="q_guide">Από τον Οδηγό</button>
+    <button class="btn" id="q_rep">${svg('print')}Εκτύπωση</button><button class="btn" id="q_exp">Εξαγωγή</button></div>
+   <div class="glance"><div class="small muted" style="font-weight:650">Γρήγορη εικόνα</div>
+    <button data-flt="today"><span>Σήμερα</span><b style="background:var(--primary-soft);color:var(--primary)">${D.today}</b></button>
+    ${feat('enable_google_calendar_export')||feat('enable_ics_export')?`<button data-flt="nocal"><span>Χωρίς Calendar</span><b style="background:var(--gold-soft);color:#7A5A00">${D.calendar_pending}</b></button>`:''}
+    <button data-flt="cancel"><span>Ακυρωμένες</span><b style="background:var(--danger-soft);color:var(--danger)">${D.cancelled}</b></button>
+    <button data-flt="overdue"><span>Εκκρεμούν από το παρελθόν</span><b style="background:#ECEFF3;color:#4B5865">${D.overdue}</b></button></div></div>
+ </div></div>`;
+ $$('[data-open]').forEach(e=>e.onclick=()=>openAction(+e.dataset.open));
+ $$('[data-flt]').forEach(e=>e.onclick=()=>quickFilter(e.dataset.flt));
+ $('#h_over')&&($('#h_over').onclick=()=>quickFilter('overdue'));
+ $('#q_new').onclick=()=>actionForm(null);$('#q_guide').onclick=()=>go('guide');$('#q_rep').onclick=()=>go('reports');$('#q_exp').onclick=()=>go('transfer');
+ if(first){$('#f_old').onclick=restoreFromFile;$('#f_name').onclick=()=>go('settings');$('#f_guide').onclick=()=>go('guide');$('#f_imp').onclick=()=>go('transfer');}
+}
+function quickFilter(k){const f=ui.filters;Object.assign(f,{search:'',category:'Όλες',status:'Όλες',calendar:'Όλες',special:''});
+ if(k==='all')f.school_year='Όλα';if(k==='upcoming'){f.special='upcoming';f.school_year='Όλα';}if(k==='done')f.status='Ολοκληρώθηκε';if(k==='today'){f.special='today';f.school_year='Όλα';}
+ if(k==='nocal'){f.calendar='Δεν περάστηκε';}if(k==='cancel')f.status='Ακυρώθηκε';if(k==='overdue'){f.special='overdue';f.school_year='Όλα';}
+ ui.view='list';ui.checked.clear();go('actions');}
+async function openAction(id){ui.sel=id;ui.view='list';const f=ui.filters;Object.assign(f,{search:'',category:'Όλες',status:'Όλες',calendar:'Όλες',special:'',school_year:'Όλα'});await go('actions',true);
+ setTimeout(()=>{let tr=document.querySelector(`tr[data-id="${id}"]`);tr&&tr.scrollIntoView({block:'center'});},50);}
+
+/* ================================================================ Δράσεις */
+function actionFilters(){const f=ui.filters,q={search:f.search,category:f.category,status:f.status,calendar:f.calendar,school_year:f.school_year||S.current_school_year};
+ if(f.special)q[f.special]=true;return q;}
+function filterSummary(noYear){const f=ui.filters,p=[];if(f.search)p.push('«'+f.search+'»');if(f.category!=='Όλες')p.push(f.category);if(f.status!=='Όλες')p.push(f.status);if(f.calendar!=='Όλες')p.push('Calendar: '+f.calendar);
+ if(!noYear)p.push((f.school_year||S.current_school_year)==='Όλα'?'όλα τα σχολικά έτη':'σχολικό έτος '+(f.school_year||S.current_school_year));
+ if(f.special)p.push({upcoming:'προσεχείς',overdue:'εκκρεμούν από το παρελθόν',today:'σήμερα'}[f.special]);return p.join(' • ');}
+async function pActions(){
+ const f=ui.filters;if(!f.school_year)f.school_year=S.current_school_year;
+ const c=$('#content');
+ c.innerHTML=`<div class="toolbar"><input type="search" class="search" id="a_search" placeholder="Αναζήτηση σε τίτλο, περιγραφή, τάξη, τοποθεσία…" value="${esc(f.search)}">
+  <button class="btn primary" id="a_new" title="Ctrl+N">${svg('plus')}Νέα δράση</button>
+  <div class="seg"><button data-view="list" class="${ui.view==='list'?'on':''}">${svg('list')} Λίστα</button><button data-view="month" class="${ui.view==='month'?'on':''}">${svg('cal')} Μήνας</button></div>
+  <span class="right"></span><button class="btn small" id="a_print">${svg('print')}Εκτύπωση λίστας</button></div>
+ <div class="filters">
+  ${ui.view==='list'?`<label>Σχολικό έτος <select id="f_year">${opt('Όλα','Όλα',f.school_year)}${S.school_years.map(y=>opt(y,y,f.school_year)).join('')}</select></label>`:''}
+  <label>Κατηγορία <select id="f_cat">${opt('Όλες','Όλες',f.category)}${S.categories.map(x=>opt(x,catLabel(x),f.category)).join('')}</select></label>
+  <label>Κατάσταση <select id="f_status">${opt('Όλες','Όλες',f.status)}${S.statuses.map(x=>opt(x,x,f.status)).join('')}</select></label>
+  ${feat('enable_google_calendar_export')||feat('enable_ics_export')?`<label>Calendar <select id="f_cal">${opt('Όλες','Όλες',f.calendar)}${S.flags.map(x=>opt(x,x,f.calendar)).join('')}</select></label>`:''}
+  ${f.special?`<span class="chip st-0">${esc({upcoming:'Προσεχείς',overdue:'Εκκρεμούν από το παρελθόν',today:'Σήμερα'}[f.special])} <button class="btn link" id="f_sp" title="Κατάργηση">✕</button></span>`:''}
+  <button class="btn small" id="f_clear">Καθαρισμός φίλτρων</button></div>
+ <div id="bulk"></div><div class="split"><div id="a_main"></div><aside class="details" id="a_det"></aside></div>`;
+ let t;$('#a_search').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{f.search=e.target.value;loadActions();},220);};
+ $('#a_new').onclick=()=>actionForm(null,ui.view==='month'?null:undefined);
+ $$('[data-view]').forEach(b=>b.onclick=()=>{ui.view=b.dataset.view;remember();pActions();});
+ const bind=(id,k)=>{let el=$(id);if(el)el.onchange=()=>{f[k]=el.value;remember();loadActions();};};
+ bind('#f_year','school_year');bind('#f_cat','category');bind('#f_status','status');bind('#f_cal','calendar');
+ $('#f_sp')&&($('#f_sp').onclick=()=>{f.special='';pActions();});
+ $('#f_clear').onclick=()=>{Object.assign(f,{search:'',category:'Όλες',status:'Όλες',calendar:'Όλες',special:'',school_year:S.current_school_year});ui.checked.clear();pActions();};
+ $('#a_print').onclick=()=>{ui.rep.type='filters';go('reports');};
+ await loadActions();}
+async function loadActions(){
+ if(ui.view==='month')return loadMonth();
+ const j=await api('actions/list',{filters:actionFilters()});ui.rows=j.rows;ui.total=j.total;
+ const ids=new Set(ui.rows.map(r=>r.id));for(let id of [...ui.checked])if(!ids.has(id))ui.checked.delete(id);
+ const today=S.today;
+ $('#a_main').innerHTML=ui.rows.length?`<div class="tblwrap"><table class="tbl"><thead><tr><th class="c"><input type="checkbox" id="chkall" title="Επιλογή όλων των εμφανιζόμενων"></th><th>Ημερομηνία</th><th style="min-width:200px">Τίτλος</th><th>Κατηγορία</th><th>Τάξη / Τοποθεσία</th><th>Κατάσταση</th>${calCol()?'<th class="c" title="Calendar">Cal.</th>':''}</tr></thead><tbody>
+  ${ui.rows.map(r=>`<tr class="click ${r.internal?'int':''} ${r.status==='Ολοκληρώθηκε'?'done':''} ${r.status==='Ακυρώθηκε'?'cancel':''} ${ui.sel===r.id?'sel':''}" data-id="${r.id}">
+   <td class="c"><input type="checkbox" data-chk="${r.id}" ${ui.checked.has(r.id)?'checked':''}></td>
+   <td class="date">${disp(r.action_date)}<small>${dowOf(r.action_date)}${r.action_date===today?' • σήμερα':''}${r.start_time?' • '+esc(timeText(r)):''}</small></td>
+   <td><div class="ttl">${r.milestone?'📌 ':''}${esc(r.title)}</div>${r.description?`<div class="desc">${esc(r.description)}</div>`:''}</td>
+   <td class="cat">${esc(catLabel(r.category))}</td><td class="small">${esc(r.class_group)}${r.class_group&&r.location?'<br>':''}<span class="muted clamp">${esc(r.location)}</span></td><td>${statusShort(r.status)}</td>
+   ${calCol()?`<td class="c" title="${esc(calTitle(r))}">${calMark(r)}</td>`:''}</tr>`).join('')}</tbody></table></div>
+  <div class="count">Εμφάνιση ${ui.rows.length===ui.total?plural(ui.rows.length,'δράσης','δράσεων'):`${ui.rows.length} από ${ui.total} δράσεις`} • ${esc(filterSummary())}</div>`
+  :`<div class="tblwrap"><div class="empty">${ui.total?'Καμία δράση με τα τρέχοντα φίλτρα.':'Δεν υπάρχουν ακόμη δράσεις. Πατήστε «Νέα δράση» ή δημιουργήστε δράσεις από τον Οδηγό Ημερών.'}</div></div>`;
+ $$('#a_main tr[data-id]').forEach(tr=>{tr.onclick=e=>{if(e.target.matches('input'))return;ui.sel=+tr.dataset.id;$$('#a_main tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');renderDetails();};
+  tr.ondblclick=e=>{if(!e.target.matches('input'))actionForm(ui.rows.find(r=>r.id===+tr.dataset.id));};});
+ $$('[data-chk]').forEach(cb=>cb.onchange=()=>{let id=+cb.dataset.chk;cb.checked?ui.checked.add(id):ui.checked.delete(id);renderBulk();});
+ const all=$('#chkall');if(all){all.checked=ui.rows.length&&ui.rows.every(r=>ui.checked.has(r.id));all.onchange=()=>{ui.rows.forEach(r=>all.checked?ui.checked.add(r.id):ui.checked.delete(r.id));loadActions();};}
+ renderBulk();renderDetails();}
+const calCol=()=>feat('enable_google_calendar_export')||feat('enable_ics_export');
+function calAllowed(r){let cf=S.category_config[r.category]||{};return (cf.google!==false&&r.export_google&&feat('enable_google_calendar_export'))||(cf.ics!==false&&feat('enable_ics_export'));}
+function calMark(r){if(r.internal&&!calAllowed(r))return '🔒';if(!calAllowed(r))return '<span class="muted">—</span>';return r.calendar_flag==='Περάστηκε'?'<span style="color:var(--ok)">✓</span>':'<span style="color:#A87D06">○</span>';}
+function calTitle(r){if(!calAllowed(r))return 'Δεν εξάγεται σε ημερολόγιο';return 'Calendar: '+r.calendar_flag;}
+function renderBulk(){const n=ui.checked.size,el=$('#bulk');if(!el)return;
+ el.innerHTML=n?`<div class="bulkbar"><b>${plural(n,'επιλεγμένη δράση','επιλεγμένες δράσεις')}</b><button class="btn small" data-bulk="status:Ολοκληρώθηκε">${svg('check')}Ολοκληρώθηκε</button><button class="btn small" data-bulk="status:Προγραμματισμένη">Προγραμματισμένη</button><button class="btn small" data-bulk="status:Ακυρώθηκε">Ακυρώθηκε</button>
+  ${calCol()?'<button class="btn small" data-bulk="calendar_flag:Περάστηκε">Calendar ✓</button><button class="btn small" data-bulk="calendar_flag:Δεν περάστηκε">Calendar ○</button>':''}
+  <button class="btn small danger" id="b_del">Διαγραφή</button><button class="btn small right" id="b_clear">Αποεπιλογή</button></div>`:'';
+ $$('[data-bulk]').forEach(b=>b.onclick=async()=>{let [k,v]=b.dataset.bulk.split(':');if(n>1&&!await confirmBox(`Να σημειωθούν ${n} επιλεγμένες δράσεις ως «${v}»${k==='calendar_flag'?' στο Calendar':''};`))return;
+  let j=await call('actions/bulk',{ids:[...ui.checked],[k]:v});if(j){toast(`Ενημερώθηκαν ${j.updated} δράσεις.`+(j.skipped?`\nΠαραλείφθηκαν ${j.skipped} που δεν εξάγονται σε ημερολόγιο.`:''));loadActions();}});
+ $('#b_del')&&($('#b_del').onclick=()=>deleteActions([...ui.checked]));$('#b_clear')&&($('#b_clear').onclick=()=>{ui.checked.clear();loadActions();});}
+function renderDetails(){const el=$('#a_det');if(!el)return;const r=ui.rows.find(x=>x.id===ui.sel);
+ if(!r){el.innerHTML=`<h2>Στοιχεία δράσης</h2><p class="muted small">Επιλέξτε μια δράση από ${ui.view==='month'?'το ημερολόγιο':'τον πίνακα'}.<br>Διπλό κλικ: επεξεργασία.</p><p class="small muted">Συντομεύσεις: <kbd>Ctrl</kbd>+<kbd>N</kbd> νέα δράση, <kbd>Ctrl</kbd>+<kbd>F</kbd> αναζήτηση.</p>`;return;}
+ let cf=S.category_config[r.category]||{},notes=[];if(r.internal)notes.push('🔒 Εσωτερικής χρήσης');if(cf.google===false||cf.ics===false||cf.website===false)notes.push('Δεν εξάγεται από την κατηγορία σε: '+[cf.website===false?'ιστοσελίδα':'',cf.google===false?'Google Calendar':'',cf.ics===false?'ICS':''].filter(Boolean).join(', '));
+ if(cf.google!==false&&!r.export_google)notes.push('Δεν θα εξαχθεί σε Google Calendar');if(cf.website!==false&&!r.export_website)notes.push('Δεν θα εξαχθεί στον πίνακα ιστοσελίδας');
+ el.innerHTML=`<h2>${r.milestone?'📌 ':''}${esc(r.title)}</h2><div class="meta"><span><b>${DOW[dt(r.action_date).getDay()]} ${disp(r.action_date)}</b>${timeText(r)?' • '+esc(timeText(r)):''}</span><span>${esc(catLabel(r.category))}</span>
+  ${r.class_group?`<span>Τάξη/Τμήμα: <b>${esc(r.class_group)}</b></span>`:''}${r.location?`<span>Τοποθεσία: <b>${esc(r.location)}</b></span>`:''}<span>${statusChip(r.status)} ${calCol()&&calAllowed(r)?`<span class="chip ${r.calendar_flag==='Περάστηκε'?'st-1':'st-3'}">Calendar: ${esc(r.calendar_flag)}</span>`:''}</span>
+  ${notes.map(n=>`<span class="small" style="color:var(--internal)">${esc(n)}</span>`).join('')}<span class="small">Σχολικό έτος ${esc(r.school_year)}</span></div>
+  ${r.description?`<div class="descr">${esc(r.description)}</div>`:''}
+  <div class="acts"><button class="btn primary" id="d_edit">Επεξεργασία</button><button class="btn" id="d_dup">Αντιγραφή ως νέα</button>
+  ${r.status!=='Ολοκληρώθηκε'?`<button class="btn okb" data-q="status:Ολοκληρώθηκε">${svg('check')}Ως ολοκληρωμένη</button>`:`<button class="btn" data-q="status:Προγραμματισμένη">Ως προγραμματισμένη</button>`}
+  ${calCol()&&calAllowed(r)?(r.calendar_flag==='Περάστηκε'?'<button class="btn" data-q="calendar_flag:Δεν περάστηκε">Calendar: ○ Δεν περάστηκε</button>':'<button class="btn" data-q="calendar_flag:Περάστηκε">Calendar: ✓ Περάστηκε</button>'):''}
+  <button class="btn danger" id="d_del">Διαγραφή</button></div>`;
+ $('#d_edit').onclick=()=>actionForm(r);$('#d_dup').onclick=()=>actionForm({...r,id:null,title:r.title+' (αντίγραφο)',status:'Προγραμματισμένη',calendar_flag:'Δεν περάστηκε'},null,'Αντιγραφή δράσης ως νέα');
+ $('#d_del').onclick=()=>deleteActions([r.id]);
+ $$('[data-q]').forEach(b=>b.onclick=async()=>{let [k,v]=b.dataset.q.split(':');if(await call('actions/bulk',{ids:[r.id],[k]:v},'Η δράση ενημερώθηκε.'))loadActions();});}
+async function deleteActions(ids){const rows=ui.rows.filter(r=>ids.includes(r.id));if(!rows.length)return;
+ const list=rows.slice(0,6).map(r=>'• '+disp(r.action_date)+' – '+r.title).join('\n')+(rows.length>6?`\n…και ακόμη ${rows.length-6}`:'');
+ if(!await confirmBox((rows.length===1?'Να διαγραφεί η δράση;':`Να διαγραφούν ${rows.length} δράσεις;`)+'\n\n'+list+(feat('auto_backup_before_delete')?'\n\nΘα δημιουργηθεί πρώτα αυτόματο αντίγραφο ασφαλείας.':''),'Διαγραφή',true))return;
+ const j=await call('actions/delete',{ids});if(j){ids.forEach(i=>ui.checked.delete(i));if(ids.includes(ui.sel))ui.sel=null;toast(`Διαγράφηκαν ${j.deleted} δράσεις.`+(j.backup?'\nΔημιουργήθηκε αντίγραφο ασφαλείας.':''));loadActions();}}
+
+/* ---------- μηνιαία προβολή ---------- */
+async function loadMonth(){
+ if(!ui.month){let t=dt(S.today);ui.month=[t.getFullYear(),t.getMonth()];}
+ const [y,m]=ui.month,first=new Date(y,m,1),start=new Date(y,m,1-((first.getDay()+6)%7)),end=new Date(start);end.setDate(start.getDate()+41);
+ const f=actionFilters();f.school_year='Όλα';f.date_from=isoOf(start);f.date_to=isoOf(end);
+ const [j,g]=await Promise.all([api('actions/list',{filters:f}),api('guide/list',{school_year:schoolYearOf(first)})]);ui.rows=j.rows;
+ const byDay={};j.rows.forEach(r=>(byDay[r.action_date]=byDay[r.action_date]||[]).push(r));
+ const gd={};(g.items||[]).forEach(i=>{if(!i.exists)(gd[i.date]=gd[i.date]||[]).push(i);});
+ let cells='';for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoOf(d),ev=byDay[iso]||[];
+  cells+=`<div class="day ${d.getMonth()!==m?'out':''} ${d.getDay()%6===0?'we':''} ${iso===S.today?'today':''}" data-day="${iso}"><span class="dn">${d.getDate()}</span><button class="add" data-add="${iso}" title="Νέα δράση ${disp(iso)}">+</button>
+   ${ev.map(r=>`<button class="ev s${stIdx(r.status)} ${r.internal?'int':''} ${ui.sel===r.id?'sel':''}" data-ev="${r.id}" title="${esc(r.title+(timeText(r)?' • '+timeText(r):''))}">${r.start_time?`<b>${r.start_time}</b> `:''}${esc(r.title)}</button>`).join('')}
+   ${ui.showGuide!==false?(gd[iso]||[]).map(i=>`<button class="ev guide" data-gd="${esc(JSON.stringify(i))}" title="Από τον Οδηγό: ${esc(i.title)} (κλικ για δημιουργία δράσης)">${esc(i.title)}</button>`).join(''):''}</div>`;}
+ $('#a_main').innerHTML=`<div class="cal"><div class="calhead"><button class="btn small" id="m_prev">‹</button><b>${MON[m]} ${y}</b><button class="btn small" id="m_next">›</button><button class="btn small" id="m_today">Σήμερα</button>
+  <label class="check right small" style="padding:0"><input type="checkbox" id="m_guide" ${ui.showGuide!==false?'checked':''}> Ημέρες του Οδηγού</label></div>
+  <div class="calgrid">${['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'].map(x=>`<div class="dow">${x}</div>`).join('')}${cells}</div></div>
+  <div class="count">${plural(j.rows.filter(r=>r.action_date.slice(0,7)===`${y}-${String(m+1).padStart(2,'0')}`).length,'δράση','δράσεις')} τον μήνα • ${esc(filterSummary(true)||'χωρίς φίλτρα')}</div>`;
+ $('#m_prev').onclick=()=>{ui.month=m?[y,m-1]:[y-1,11];loadMonth();};$('#m_next').onclick=()=>{ui.month=m<11?[y,m+1]:[y+1,0];loadMonth();};$('#m_today').onclick=()=>{ui.month=null;loadMonth();};
+ $('#m_guide').onchange=e=>{ui.showGuide=e.target.checked;loadMonth();};
+ $$('[data-ev]').forEach(b=>{b.onclick=()=>{ui.sel=+b.dataset.ev;$$('.ev.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');renderDetails();};b.ondblclick=()=>actionForm(ui.rows.find(r=>r.id===+b.dataset.ev));});
+ $$('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();actionForm(null,b.dataset.add);});
+ $$('[data-day]').forEach(d=>d.ondblclick=e=>{if(e.target===d||e.target.classList.contains('dn'))actionForm(null,d.dataset.day);});
+ $$('[data-gd]').forEach(b=>b.onclick=()=>{let i=JSON.parse(b.dataset.gd);actionForm({id:null,action_date:i.date,title:i.title,category:i.category,description:i.description,status:'Προγραμματισμένη'},null,'Νέα δράση από τον Οδηγό Ημερών');});
+ renderBulk();renderDetails();}
+const schoolYearOf=d=>{let y=d.getMonth()>=8?d.getFullYear():d.getFullYear()-1;return y+'-'+(y+1);};
+
+/* ---------- φόρμα δράσης ---------- */
+let suggestCache=null;
+async function suggestions(){if(!suggestCache){let j=await api('actions/list',{filters:{school_year:'Όλα'}});let cg=new Set(),lc=new Set();j.rows.forEach(r=>{r.class_group&&cg.add(r.class_group);r.location&&lc.add(r.location);});suggestCache={cg:[...cg].sort(),lc:[...lc].sort()};}return suggestCache;}
+async function actionForm(r,dateIso,title){
+ const isNew=!r||!r.id;r=Object.assign({action_date:dateIso||S.today,title:'',category:S.categories.includes(S.default_category)?S.default_category:S.categories[0],start_time:'',end_time:'',class_group:'',location:'',status:S.statuses[0],calendar_flag:S.flags[0],export_google:null,export_website:null,description:''},r||{});
+ const sg=await suggestions();
+ const d=modal(title||(isNew?'Νέα δράση':'Επεξεργασία δράσης'),`<p class="muted small" style="margin:0 0 10px">Υποχρεωτικά πεδία: ημερομηνία και τίτλος. <kbd>Ctrl</kbd>+<kbd>S</kbd> αποθήκευση.</p>
+ <div class="fields"><div class="sect"><b>Βασικά στοιχεία</b>
+  <label class="field"><span>Ημερομηνία *</span><input type="date" id="x_date" value="${esc(r.action_date)}" required></label>
+  <label class="field"><span>Τίτλος δράσης *</span><input id="x_title" value="${esc(r.title)}" autofocus maxlength="300"></label>
+  <label class="field"><span>Κατηγορία</span><select id="x_cat">${S.categories.map(c=>opt(c,catLabel(c),r.category)).join('')}</select></label></div>
+ <div class="sect"><b>Χρόνος & τόπος</b><div class="row"><label class="field grow"><span>Ώρα έναρξης</span><input type="time" id="x_st" value="${esc(r.start_time)}"></label><label class="field grow"><span>Ώρα λήξης</span><input type="time" id="x_et" value="${esc(r.end_time)}"></label></div>
+  <label class="field"><span>Τάξη / Τμήμα</span><input id="x_cg" list="dl_cg" value="${esc(r.class_group)}"></label><label class="field"><span>Τοποθεσία</span><input id="x_loc" list="dl_lc" value="${esc(r.location)}"></label></div></div>
+ <div class="sect"><b>Κατάσταση & εξαγωγές</b><div class="row" style="align-items:flex-start"><label class="field" style="min-width:200px"><span>Κατάσταση</span><select id="x_st2">${S.statuses.map(s=>opt(s,s,r.status)).join('')}</select></label>
+  <label class="field" style="min-width:200px" id="x_calw"><span>Ημερολόγιο (Calendar)</span><select id="x_cal">${S.flags.map(s=>opt(s,s,r.calendar_flag)).join('')}</select></label>
+  <div class="field"><span>Επιλογές εξαγωγής</span><label class="check" id="x_egw"><input type="checkbox" id="x_eg"> Να εξαχθεί σε Google Calendar</label><label class="check" id="x_eww"><input type="checkbox" id="x_ew"> Να εξαχθεί στο CSV ιστοσελίδας</label></div></div>
+  <div id="x_note" class="small" style="color:var(--internal);font-weight:600"></div></div>
+ <label class="field"><span>Περιγραφή / σημειώσεις</span><textarea id="x_desc" rows="5">${esc(r.description)}</textarea></label>
+ <datalist id="dl_cg">${sg.cg.map(x=>`<option value="${esc(x)}">`).join('')}</datalist><datalist id="dl_lc">${sg.lc.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`,
+ {wide:'min(860px,95vw)',ok:'Αποθήκευση',onOk:async()=>{
+  const a={id:isNew?null:r.id,action_date:$('#x_date').value,title:$('#x_title').value,category:$('#x_cat').value,start_time:$('#x_st').value,end_time:$('#x_et').value,class_group:$('#x_cg').value,location:$('#x_loc').value,
+   status:$('#x_st2').value,calendar_flag:$('#x_cal').value,export_google:$('#x_eg').checked,export_website:$('#x_ew').checked,description:$('#x_desc').value};
+  if(!a.action_date)throw Error('Συμπληρώστε ημερομηνία.');if(!a.title.trim())throw Error('Συμπληρώστε τίτλο δράσης.');
+  const j=await api('actions/save',{action:a});suggestCache=null;ui.sel=j.id;S.first_run=false;toast(isNew?'Η δράση καταχωρίστηκε.':'Οι αλλαγές αποθηκεύτηκαν.');
+  if(page==='actions'){let sy=j.action.school_year;if(ui.view==='list'&&ui.filters.school_year!=='Όλα'&&ui.filters.school_year!==sy){ui.filters.school_year=sy;}if(ui.view==='month'){let d=dt(j.action.action_date);ui.month=[d.getFullYear(),d.getMonth()];}pActions();}
+  else if(page==='home')pHome();else if(page==='guide')loadGuide();}});
+ let firstCat=true;
+ const apply=()=>{const c=$('#x_cat').value,cf=S.category_config[c]||{};const gAllowed=cf.google!==false&&feat('enable_google_calendar_export'),wAllowed=cf.website!==false&&feat('enable_website_export');
+  const eg=$('#x_eg'),ew=$('#x_ew');
+  if(firstCat){eg.checked=r.export_google===null?gAllowed:!!r.export_google&&gAllowed;ew.checked=r.export_website===null?wAllowed:!!r.export_website&&wAllowed;firstCat=false;}else{eg.checked=gAllowed;ew.checked=wAllowed;}
+  eg.disabled=!gAllowed;ew.disabled=!wAllowed;$('#x_egw').hidden=!feat('enable_google_calendar_export');$('#x_eww').hidden=!feat('enable_website_export');
+  const calOk=(gAllowed&&eg.checked)||(cf.ics!==false&&feat('enable_ics_export'));$('#x_cal').disabled=!calOk;if(!calOk)$('#x_cal').value='Δεν περάστηκε';$('#x_calw').hidden=!(feat('enable_google_calendar_export')||feat('enable_ics_export'));
+  const n=[];if(cf.internal)n.push('🔒 Εσωτερικής χρήσης');const bl=[cf.website===false?'πίνακα ιστοσελίδας':'',cf.google===false?'Google Calendar':'',cf.ics===false?'ICS':''].filter(Boolean);if(bl.length)n.push('Δεν εξάγεται από την κατηγορία σε: '+bl.join(', '));$('#x_note').textContent=n.join(' • ');};
+ $('#x_cat').onchange=apply;$('#x_eg').onchange=()=>{const c=S.category_config[$('#x_cat').value]||{};const ok=($('#x_eg').checked)||(c.ics!==false&&feat('enable_ics_export'));$('#x_cal').disabled=!ok;if(!ok)$('#x_cal').value='Δεν περάστηκε';};apply();
+ $('#x_st').onchange=()=>{let s=$('#x_st').value,e=$('#x_et');if(s&&(!e.value||e.value<s)){let [h,mi]=s.split(':').map(Number);e.value=String(Math.min(23,h+1)).padStart(2,'0')+':'+String(mi).padStart(2,'0');}};
+ d.addEventListener('keydown',e=>{if(e.ctrlKey&&(e.key==='s'||e.key==='σ')){e.preventDefault();d.querySelector('[data-ok]').click();}});}
+
+/* ================================================================ Οδηγός Ημερών */
+async function pGuide(){
+ if(!ui.guideYear)ui.guideYear=S.current_school_year;
+ const gcats=['Όλες',...S.categories];
+ $('#content').innerHTML=`<div class="wrap"><div class="card"><p class="muted" style="margin:0 0 10px">Ενδεικτικές ημέρες δράσεων, θεσμοθετημένες σχολικές ημέρες, εθνικές επέτειοι και ορόσημα εσωτερικής αξιολόγησης. Επιλέξτε ημέρες και δημιουργήστε δράσεις με ένα κλικ, ή προσαρμόστε τον οδηγό.</p>
+ <div class="row"><label class="row small" style="gap:6px;font-weight:600;color:var(--muted)">Σχολικό έτος <select id="g_year">${S.school_years.map(y=>opt(y,y,ui.guideYear)).join('')}</select></label><button class="btn small" id="g_ny">Νέο σχολικό έτος</button>
+  <label class="row small" style="gap:6px;font-weight:600;color:var(--muted)">Κατηγορία <select id="g_cat">${gcats.map(c=>opt(c,c==='Όλες'?c:catLabel(c),ui.guideCat)).join('')}</select></label>
+  <span class="right"></span><button class="btn small" id="g_add">${svg('plus')}Προσθήκη ημέρας</button><button class="btn small" id="g_reset">Επαναφορά προτεινόμενων</button><button class="btn small" id="g_print">${svg('print')}Εκτύπωση οδηγού</button></div></div>
+ <div id="g_bar"></div><div id="g_list"></div></div>`;
+ $('#g_year').onchange=e=>{ui.guideYear=e.target.value;ui.guideSel.clear();loadGuide();};$('#g_cat').onchange=e=>{ui.guideCat=e.target.value;loadGuide();};
+ $('#g_ny').onclick=()=>addYearDialog(y=>{ui.guideYear=y;pGuide();});$('#g_add').onclick=()=>guideForm(null);
+ $('#g_reset').onclick=async()=>{if(await confirmBox('Να επανέλθουν οι προτεινόμενες ημέρες του οδηγού;\nΟι δικές σας αλλαγές και προσθήκες στον οδηγό θα χαθούν. (Οι δράσεις δεν επηρεάζονται.)','Επαναφορά',true)&&await call('guide/reset',{},'Ο οδηγός επανήλθε.'))loadGuide();};
+ $('#g_print').onclick=()=>{Object.assign(ui.rep,{type:'guide',school_year:ui.guideYear,category:ui.guideCat});go('reports');};
+ await loadGuide();}
+async function loadGuide(){
+ const j=await api('guide/list',{school_year:ui.guideYear,category:ui.guideCat});ui.guideItems=j.items;
+ const key=i=>i.day+'/'+i.month+'/'+i.title;const sel=ui.guideSel;for(let k of [...sel])if(!j.items.some(i=>key(i)===k))sel.delete(k);
+ let cur='';
+ $('#g_list').innerHTML=j.items.length?`<div class="tblwrap"><table class="tbl"><thead><tr><th class="c"><input type="checkbox" id="g_all"></th><th>Ημερομηνία</th><th>Ημέρα / Επέτειος</th><th>Κατηγορία</th><th>Δράση</th><th></th></tr></thead><tbody>
+  ${j.items.map((i,n)=>{let ml=MON[dt(i.date).getMonth()]+' '+dt(i.date).getFullYear();let h=ml!==cur?`<tr><td colspan="6" style="background:#EEF3F2;color:var(--primary);font-weight:700">${ml}</td></tr>`:'';cur=ml;
+   return h+`<tr class="${i.internal?'int':''}" data-g="${n}"><td class="c"><input type="checkbox" data-gk="${esc(key(i))}" ${sel.has(key(i))?'checked':''}></td><td class="date">${disp(i.date)}<small>${dowOf(i.date)}</small></td>
+   <td><div class="ttl">${i.internal?'🔒 ':i.milestone?'📌 ':''}${esc(i.title)}</div>${i.description?`<div class="desc">${esc(i.description)}</div>`:''}</td><td>${esc(catLabel(i.category))}</td>
+   <td>${i.exists?'<span class="chip st-1" title="Υπάρχει ήδη δράση με αυτόν τον τίτλο και αυτή την ημερομηνία">✓ υπάρχει</span>':`<button class="btn small" data-gc="${n}">Δημιουργία</button>`}</td>
+   <td style="white-space:nowrap"><button class="btn small" data-ge="${n}">Επεξεργασία</button> <button class="btn small danger" data-gx="${n}" title="Διαγραφή από τον οδηγό">✕</button></td></tr>`;}).join('')}</tbody></table></div>`
+  :'<div class="tblwrap"><div class="empty">Δεν υπάρχουν ημέρες για την επιλεγμένη κατηγορία.</div></div>';
+ const bar=()=>{let n=sel.size;$('#g_bar').innerHTML=n?`<div class="bulkbar"><b>${plural(n,'επιλεγμένη ημέρα','επιλεγμένες ημέρες')}</b><button class="btn small primary" id="g_mk">Δημιουργία δράσεων για τις επιλεγμένες</button><button class="btn small right" id="g_cl">Αποεπιλογή</button></div>`:'';
+  if(n){$('#g_mk').onclick=async()=>{let items=ui.guideItems.filter(i=>sel.has(key(i)));let r=await call('guide/create',{school_year:ui.guideYear,items});if(r){toast(`Δημιουργήθηκαν ${r.created} δράσεις.`+(r.skipped?` Παραλείφθηκαν ${r.skipped} που υπήρχαν ήδη.`:''));sel.clear();S.first_run=false;loadGuide();}};$('#g_cl').onclick=()=>{sel.clear();loadGuide();};}};
+ $$('[data-gk]').forEach(cb=>cb.onchange=()=>{cb.checked?sel.add(cb.dataset.gk):sel.delete(cb.dataset.gk);bar();});
+ const all=$('#g_all');if(all){all.checked=j.items.length&&j.items.every(i=>sel.has(key(i)));all.onchange=()=>{j.items.forEach(i=>all.checked?sel.add(key(i)):sel.delete(key(i)));loadGuide();};}
+ $$('[data-gc]').forEach(b=>b.onclick=()=>{let i=j.items[+b.dataset.gc];actionForm({id:null,action_date:i.date,title:i.title,category:i.category,description:i.description,status:'Προγραμματισμένη'},null,'Νέα δράση από τον Οδηγό Ημερών');});
+ $$('[data-ge]').forEach(b=>b.onclick=()=>guideForm(j.items[+b.dataset.ge]));
+ $$('[data-gx]').forEach(b=>b.onclick=async()=>{let i=j.items[+b.dataset.gx];if(await confirmBox(`Να διαγραφεί από τον οδηγό η ημέρα:\n«${i.title}» (${i.day}/${i.month});`,'Διαγραφή',true)&&await call('guide/delete',{item:i},'Διαγράφηκε από τον οδηγό.'))loadGuide();});
+ $$('tr[data-g]').forEach(tr=>tr.ondblclick=e=>{if(!e.target.closest('button,input')){let i=j.items[+tr.dataset.g];if(!i.exists)actionForm({id:null,action_date:i.date,title:i.title,category:i.category,description:i.description,status:'Προγραμματισμένη'},null,'Νέα δράση από τον Οδηγό Ημερών');}});
+ bar();}
+function guideForm(item){const isNew=!item;item=item||{day:'',month:'',title:'',category:'Ενημέρωση & Οργάνωση',description:''};
+ modal(isNew?'Προσθήκη ημέρας στον οδηγό':'Επεξεργασία ημέρας',`<div class="row"><label class="field"><span>Ημέρα</span><input type="number" id="y_d" min="1" max="31" value="${esc(item.day)}" style="width:90px" autofocus></label>
+  <label class="field"><span>Μήνας</span><select id="y_m">${MON.map((m,i)=>opt(i+1,m,item.month)).join('')}</select></label></div>
+  <label class="field"><span>Τίτλος</span><input id="y_t" value="${esc(item.title)}" style="width:min(560px,80vw)"></label>
+  <label class="field"><span>Κατηγορία</span><select id="y_c">${S.categories.map(c=>opt(c,catLabel(c),item.category)).join('')}</select></label>
+  <label class="field"><span>Περιγραφή</span><textarea id="y_ds" rows="5">${esc(item.description)}</textarea></label><p class="small muted" style="margin:0">Η ημερομηνία υπολογίζεται αυτόματα για κάθε σχολικό έτος.</p>`,
+ {onOk:async()=>{await api('guide/save',{item:{day:$('#y_d').value,month:$('#y_m').value,title:$('#y_t').value,category:$('#y_c').value,description:$('#y_ds').value},original:isNew?null:item});toast('Αποθηκεύτηκε.');loadGuide();}});}
+function addYearDialog(done){let cur=S.current_school_year,n=+cur.slice(0,4)+1;
+ modal('Νέο σχολικό έτος',`<label class="field"><span>Σχολικό έτος (μορφή 2026-2027)</span><input id="ny" value="${n}-${n+1}" autofocus></label><label class="check"><input type="checkbox" id="ny_cur" checked> Να γίνει ενεργό σχολικό έτος</label>`,
+ {ok:'Προσθήκη',onOk:async()=>{let y=$('#ny').value.trim();S=await api('years/add',{year:y,make_current:$('#ny_cur').checked});toast('Προστέθηκε το σχολικό έτος '+y);done&&done(y);renderFrame();}});}
+
+/* ================================================================ Ημερολόγιο Σχολικής Ζωής */
+async function pLifelog(){
+ S.lifelog=await api('lifelog/status');renderFrame();const L=S.lifelog,c=$('#content');
+ if(L.protected&&!L.has_password){c.innerHTML=`<div class="card lock">${svg('lock')}<h2>Ημερολόγιο Σχολικής Ζωής</h2><p class="muted">Δεν έχει οριστεί ακόμη κωδικός πρόσβασης. Ορίστε κωδικό για την προστασία της ενότητας.</p>
+  <div style="display:grid;gap:8px;max-width:320px;margin:0 auto;text-align:left"><input type="password" id="l_p1" placeholder="Νέος κωδικός (τουλάχιστον 4 χαρακτήρες)" autocomplete="new-password"><input type="password" id="l_p2" placeholder="Επιβεβαίωση" autocomplete="new-password"><button class="btn primary" id="l_set" style="justify-content:center">Ορισμός κωδικού</button></div></div>`;
+  $('#l_set').onclick=async()=>{if(await call('lifelog/setup',{password:$('#l_p1').value,confirm:$('#l_p2').value},'Ο κωδικός ορίστηκε. Το Ημερολόγιο ξεκλειδώθηκε.'))pLifelog();};return;}
+ if(L.protected&&!L.unlocked){c.innerHTML=`<div class="card lock">${svg('lock')}<h2>Προστατευμένη ενότητα</h2><p class="muted">Η πρόσβαση στο Ημερολόγιο Σχολικής Ζωής απαιτεί κωδικό.</p>
+  <div class="row" style="justify-content:center"><input type="password" id="l_pw" placeholder="Κωδικός" autocomplete="current-password" autofocus><button class="btn primary" id="l_un">Ξεκλείδωμα</button></div>
+  <p class="small muted">Ο κωδικός αλλάζει από τις Ρυθμίσεις του Ημερολογίου, μετά το ξεκλείδωμα.</p></div>`;
+  const un=async()=>{if(await call('lifelog/unlock',{password:$('#l_pw').value}))pLifelog();};$('#l_un').onclick=un;$('#l_pw').onkeydown=e=>{if(e.key==='Enter')un();};setTimeout(()=>$('#l_pw')?.focus(),50);return;}
+ c.innerHTML=`<div class="wrap"><div class="card"><p class="muted" style="margin:0 0 10px">Καταγραφή της καθημερινής σχολικής ζωής με ημερομηνία και περιγραφή.</p>
+ <div class="row"><input type="search" id="l_s" placeholder="Αναζήτηση…" value="${esc(ui.llSearch)}" style="width:240px"><label class="row small" style="gap:6px;color:var(--muted);font-weight:600">Από <input type="date" id="l_f" value="${ui.llFrom}"></label><label class="row small" style="gap:6px;color:var(--muted);font-weight:600">Έως <input type="date" id="l_t" value="${ui.llTo}"></label>
+  <span class="right"></span>${L.protected?`<button class="btn small" id="l_lock">${svg('lock')}Κλείδωμα</button>`:''}</div>
+ <div class="row" style="margin-top:10px"><button class="btn primary" id="l_new">${svg('plus')}Νέα καταγραφή</button><button class="btn" id="l_tr" title="Οι δράσεις με κατάσταση «Ολοκληρώθηκε» που δεν έχουν ήδη μεταφερθεί">Μεταφορά ολοκληρωμένων δράσεων</button>
+  <button class="btn" id="l_pr">${svg('print')}Εκτύπωση</button><button class="btn" id="l_set">${svg('gear')}Ρυθμίσεις</button></div></div><div id="l_list"></div><div id="l_prev"></div></div>`;
+ let t;$('#l_s').oninput=e=>{clearTimeout(t);t=setTimeout(()=>{ui.llSearch=e.target.value;loadLifelog();},220);};
+ $('#l_f').onchange=e=>{ui.llFrom=e.target.value;loadLifelog();};$('#l_t').onchange=e=>{ui.llTo=e.target.value;loadLifelog();};
+ $('#l_lock')&&($('#l_lock').onclick=async()=>{await call('lifelog/lock');pLifelog();});
+ $('#l_new').onclick=()=>lifelogForm(null);
+ $('#l_tr').onclick=async()=>{if(!await confirmBox('Να μεταφερθούν στο Ημερολόγιο Σχολικής Ζωής οι ολοκληρωμένες δράσεις που δεν έχουν ήδη μεταφερθεί;'))return;let j=await call('lifelog/transfer');if(j){toast(`Μεταφέρθηκαν ${j.count} καταγραφές.`);loadLifelog();}};
+ $('#l_pr').onclick=async()=>{let j=await call('lifelog/report',{search:ui.llSearch,date_from:ui.llFrom,date_to:ui.llTo});if(j)showPreview('#l_prev',j,()=>api('lifelog/report',{search:ui.llSearch,date_from:ui.llFrom,date_to:ui.llTo,toolbar:true}));};
+ $('#l_set').onclick=lifelogSettings;
+ await loadLifelog();}
+async function loadLifelog(){const j=await api('lifelog/list',{search:ui.llSearch,date_from:ui.llFrom,date_to:ui.llTo});
+ $('#l_list').innerHTML=j.rows.length?`<div class="tblwrap"><table class="tbl"><thead><tr><th style="width:120px">Ημερομηνία</th><th>Περιγραφή</th><th style="width:170px"></th></tr></thead><tbody>
+  ${j.rows.map(r=>`<tr class="click" data-l="${r.id}"><td class="date">${disp(r.log_date)}<small>${dowOf(r.log_date)}</small></td><td style="white-space:pre-wrap">${esc(r.description)}</td><td style="white-space:nowrap;text-align:right"><button class="btn small" data-le="${r.id}">Επεξεργασία</button> <button class="btn small danger" data-lx="${r.id}">Διαγραφή</button></td></tr>`).join('')}</tbody></table></div><div class="count">${plural(j.rows.length,'καταγραφή','καταγραφές')}</div>`
+  :`<div class="tblwrap"><div class="empty">Δεν υπάρχουν καταγραφές${ui.llSearch||ui.llFrom||ui.llTo?' για τα κριτήρια αναζήτησης':''}.</div></div>`;
+ const byId=id=>j.rows.find(r=>r.id===+id);
+ $$('[data-le]').forEach(b=>b.onclick=()=>lifelogForm(byId(b.dataset.le)));$$('tr[data-l]').forEach(tr=>tr.ondblclick=()=>lifelogForm(byId(tr.dataset.l)));
+ $$('[data-lx]').forEach(b=>b.onclick=async()=>{if(await confirmBox('Να διαγραφεί οριστικά η καταγραφή;','Διαγραφή',true)&&await call('lifelog/delete',{ids:[+b.dataset.lx]},'Η καταγραφή διαγράφηκε.'))loadLifelog();});}
+function lifelogForm(r){const isNew=!r;r=r||{log_date:S.today,description:''};
+ const d=modal(isNew?'Νέα καταγραφή':'Επεξεργασία καταγραφής',`<label class="field"><span>Ημερομηνία</span><input type="date" id="ll_d" value="${esc(r.log_date)}" style="width:200px"></label><label class="field"><span>Περιγραφή / καταγραφή</span><textarea id="ll_t" rows="10" style="width:min(680px,85vw)" autofocus>${esc(r.description)}</textarea></label>`,
+ {onOk:async()=>{await api('lifelog/save',{entry:{id:isNew?null:r.id,log_date:$('#ll_d').value,description:$('#ll_t').value}});toast('Αποθηκεύτηκε.');loadLifelog();}});
+ d.addEventListener('keydown',e=>{if(e.ctrlKey&&(e.key==='s'||e.key==='σ')){e.preventDefault();d.querySelector('[data-ok]').click();}});}
+function lifelogSettings(){const L=S.lifelog;
+ modal('Ρυθμίσεις Ημερολογίου Σχολικής Ζωής',`<label class="check"><input type="checkbox" id="ls_p" ${L.protected?'checked':''}> Πρόσβαση με κωδικό</label>
+  <h3 style="font-size:13px;margin:12px 0 6px">Αλλαγή κωδικού (προαιρετικά)</h3><div style="display:grid;gap:8px;max-width:320px"><input type="password" id="ls_1" placeholder="Νέος κωδικός" autocomplete="new-password"><input type="password" id="ls_2" placeholder="Επιβεβαίωση" autocomplete="new-password"></div>
+  <p class="small muted" style="max-width:520px">Ο κωδικός είναι πρακτική προστασία μέσα στην εφαρμογή· αποθηκεύεται κρυπτογραφημένος (δεν μπορεί να ανακτηθεί, μόνο να αλλάξει). Τα δεδομένα του αρχείου δεν κρυπτογραφούνται: φυλάσσετε τα αντίγραφα ασφαλείας με προσοχή.</p>`,
+ {onOk:async()=>{S.lifelog=await api('lifelog/settings',{protected:$('#ls_p').checked,new_password:$('#ls_1').value,confirm:$('#ls_2').value});toast('Οι ρυθμίσεις αποθηκεύτηκαν.');renderFrame();}});}
+
+/* ================================================================ Εκτυπώσεις */
+async function pReports(){
+ const R=ui.rep;if(!R.school_year)R.school_year=S.current_school_year;
+ const months=ym=>{let y=+ym.slice(0,4),out=[];for(let i=0;i<12;i++){let m=(8+i)%12,yy=y+(i>=4?1:0);out.push([`${yy}-${String(m+1).padStart(2,'0')}`,MON[m]+' '+yy]);}return out;};
+ const ms=months(R.school_year);if(!ms.some(m=>m[0]===R.from_month))R.from_month=ms[0][0];if(!ms.some(m=>m[0]===R.to_month))R.to_month=ms[11][0];
+ if(!R.categories)R.categories=[...S.categories];
+ const isG=R.type==='guide',isF=R.type==='filters';
+ $('#content').innerHTML=`<div class="wrap"><div class="card"><div class="row" style="align-items:flex-start;gap:18px">
+  <div style="display:grid;grid-template-columns:auto auto;gap:8px 12px;align-items:center">
+   <span class="small muted" style="font-weight:600">Τύπος αναφοράς</span><select id="r_type">${S.report_types.map(t=>opt(t[0],t[1],R.type)).join('')}</select>
+   ${isF?`<span></span><span class="small muted" style="max-width:340px">Χρησιμοποιούνται τα φίλτρα της σελίδας Δράσεις:<br><b>${esc(filterSummary())}</b></span>`:`
+   <span class="small muted" style="font-weight:600">Σχολικό έτος</span><select id="r_year">${S.school_years.map(y=>opt(y,y,R.school_year)).join('')}</select>
+   ${isG?'':`<span class="small muted" style="font-weight:600">Από μήνα</span><select id="r_from">${ms.map(m=>opt(m[0],m[1],R.from_month)).join('')}</select>
+   <span class="small muted" style="font-weight:600">Έως μήνα</span><select id="r_to">${ms.map(m=>opt(m[0],m[1],R.to_month)).join('')}</select>`}
+   <span class="small muted" style="font-weight:600">Κατηγορία</span><select id="r_cat">${opt('Όλες','Όλες',R.category)}${S.categories.map(c=>opt(c,catLabel(c),R.category)).join('')}</select>
+   ${isG||['scheduled','completed'].includes(R.type)?'':`<span class="small muted" style="font-weight:600">Κατάσταση</span><select id="r_st">${opt('Όλες','Όλες',R.status)}${S.statuses.map(s=>opt(s,s,R.status)).join('')}</select>`}`}
+  </div>
+  ${isG||isF?'':`<div><div class="small muted" style="font-weight:600;margin-bottom:4px">Κατηγορίες προς εκτύπωση <button class="btn link small" id="r_all">Όλες</button> <button class="btn link small" id="r_none">Καμία</button></div>
+   <div class="checklist" id="r_cats" style="min-width:300px">${S.categories.map(c=>`<label><input type="checkbox" value="${esc(c)}" ${R.categories.includes(c)?'checked':''}>${esc(catLabel(c))}</label>`).join('')}</div>
+   <label class="check small"><input type="checkbox" id="r_int" ${R.include_internal?'checked':''}> Συμπερίληψη εσωτερικών δράσεων (🔒)</label></div>`}
+  <div class="right" style="display:grid;gap:8px"><button class="btn primary" id="r_go">Προεπισκόπηση</button></div></div>
+  <p class="small muted" style="margin:10px 0 0">Για έναν μήνα επιλέξτε τον ίδιο μήνα στα πεδία Από/Έως. Η προεπισκόπηση εμφανίζεται παρακάτω· από εκεί γίνεται εκτύπωση ή αποθήκευση ως PDF.</p></div><div id="r_prev"></div></div>`;
+ const rd=()=>{R.type=$('#r_type').value;if($('#r_year'))R.school_year=$('#r_year').value;if($('#r_from'))R.from_month=$('#r_from').value;if($('#r_to'))R.to_month=$('#r_to').value;
+  if($('#r_cat'))R.category=$('#r_cat').value;if($('#r_st'))R.status=$('#r_st').value;if($('#r_cats'))R.categories=$$('#r_cats input:checked').map(x=>x.value);if($('#r_int'))R.include_internal=$('#r_int').checked;};
+ $('#r_type').onchange=()=>{rd();pReports();};$('#r_year')&&($('#r_year').onchange=()=>{rd();R.from_month=R.to_month=null;pReports();});
+ $('#r_all')&&($('#r_all').onclick=()=>{$$('#r_cats input').forEach(x=>x.checked=true);});$('#r_none')&&($('#r_none').onclick=()=>{$$('#r_cats input').forEach(x=>x.checked=false);});
+ $('#r_go').onclick=async()=>{rd();const o={...R};if(R.type==='filters')o.filters=actionFilters();if(R.categories&&!R.categories.length)o.categories=[];
+  const j=await call('report',{options:o});if(j)showPreview('#r_prev',j,()=>api('report',{options:o,toolbar:true}));};}
+function showPreview(sel,j,standalone){
+ $(sel).innerHTML=`<div class="card" style="padding:12px 14px"><div class="row" style="margin-bottom:10px"><b>${esc(j.title)}</b><span class="muted small">${plural(j.count,'εγγραφή','εγγραφές')}</span><span class="right"></span>
+  <button class="btn primary" id="pv_print">${svg('print')}Εκτύπωση / PDF</button><button class="btn" id="pv_save">Αποθήκευση αρχείου HTML</button><button class="btn" id="pv_close">Κλείσιμο</button></div>
+  <iframe class="preview" id="pv_frame" title="Προεπισκόπηση"></iframe></div>`;
+ $('#pv_frame').srcdoc=j.html;$('#pv_print').onclick=()=>$('#pv_frame').contentWindow.print();$('#pv_close').onclick=()=>$(sel).innerHTML='';
+ $('#pv_save').onclick=async()=>{let k=await standalone();saveFile(new Blob([k.html],{type:'text/html'}),k.filename);};
+ $(sel).scrollIntoView({behavior:'smooth',block:'start'});}
+
+/* ================================================================ Εισαγωγή / Εξαγωγή */
+function pTransfer(){
+ const f=ui.filters;const exp=[['app_csv','enable_csv','Γενικό CSV εφαρμογής','Όλα τα πεδία, για φύλαξη, επεξεργασία στο Excel ή επανεισαγωγή.','btn gold'],
+  ['website','enable_website_export','Πίνακας ιστοσελίδας','CSV για πίνακα στην ιστοσελίδα του σχολείου (π.χ. Ninja Tables). Χωρίς εσωτερικές δράσεις.','btn gold'],
+  ['google','enable_google_calendar_export','Google Calendar CSV','CSV με αγγλικές επικεφαλίδες για «Εισαγωγή» στο Google Calendar.','btn gold'],
+  ['ics','enable_ics_export','Αρχείο ημερολογίου ICS','Για Google Calendar, Outlook, κινητά. Νέα εισαγωγή ενημερώνει τα ίδια γεγονότα αντί να τα διπλασιάζει.','btn gold']].filter(e=>feat(e[1]));
+ if(!ui.expScope)ui.expScope='year';
+ $('#content').innerHTML=`<div class="wrap"><div class="grid2"><div class="card"><h2>Εισαγωγή δράσεων από Excel ή CSV</h2><p class="muted">Μαζική καταχώριση δράσεων. Υποχρεωτικές στήλες: <b>ημερομηνία</b> και <b>τίτλος</b>. Δεκτές ημερομηνίες ΗΗ/ΜΜ/ΕΕΕΕ, ΕΕΕΕ-ΜΜ-ΗΗ ή κελιά ημερομηνίας του Excel· ώρες ΩΩ:ΛΛ.</p>
+  <div class="drop" id="t_drop">Σύρετε εδώ ένα αρχείο <b>.xlsx</b> ή <b>.csv</b><br><div class="row" style="justify-content:center;margin-top:10px"><button class="btn primary" id="t_pick">Επιλογή αρχείου…</button><button class="btn" id="t_tpl">Λήψη υποδείγματος Excel</button></div></div>
+  <p class="small muted" style="margin:10px 0 0">Πριν από την εισαγωγή εμφανίζεται προεπισκόπηση με τις νέες δράσεις, τα διπλότυπα (ίδια ημερομηνία, τίτλος και ώρα έναρξης) και τυχόν λάθη ανά γραμμή.${feat('auto_backup_before_import')?' Δημιουργείται αυτόματα αντίγραφο ασφαλείας.':''}</p></div>
+ <div class="card"><h2>Εξαγωγές</h2><p class="muted">Δράσεις προς εξαγωγή:</p>
+  <label class="check"><input type="radio" name="sc" value="year" ${ui.expScope==='year'?'checked':''}> Όλες οι δράσεις του σχολικού έτους <select id="t_year" style="margin-left:6px">${S.school_years.map(y=>opt(y,y,ui.expYear||S.current_school_year)).join('')}</select></label>
+  <label class="check"><input type="radio" name="sc" value="filters" ${ui.expScope==='filters'?'checked':''}> Οι δράσεις που εμφανίζονται στη σελίδα Δράσεις <small>(${esc(filterSummary())})</small></label>
+  <label class="check"><input type="radio" name="sc" value="all" ${ui.expScope==='all'?'checked':''}> Όλες οι δράσεις (όλα τα έτη)</label>
+  <p class="small muted" style="margin:8px 0 0">Οι κανόνες κάθε κατηγορίας και οι επιλογές κάθε δράσης εφαρμόζονται αυτόματα (π.χ. οι δράσεις «Εσωτερικής Αξιολόγησης» δεν εξάγονται σε ημερολόγια και ιστοσελίδα).</p></div></div>
+ <div class="grid2" style="margin-top:14px">${exp.map(e=>`<div class="card"><h2>${e[2]}</h2><p class="muted">${e[3]}</p><button class="${e[4]}" data-exp="${e[0]}">Εξαγωγή…</button>${e[0]==='ics'||e[0]==='google'?' <button class="btn" data-mark="1">Σήμανση ως «Περάστηκε»</button>':''}</div>`).join('')||'<div class="card"><p class="muted">Όλες οι εξαγωγές είναι απενεργοποιημένες από τις Ρυθμίσεις.</p></div>'}</div></div>`;
+ $$('input[name=sc]').forEach(r=>r.onchange=()=>{ui.expScope=r.value;});$('#t_year').onchange=e=>{ui.expYear=e.target.value;ui.expScope='year';$('input[name=sc][value=year]').checked=true;};
+ $('#t_pick').onclick=async()=>{let f=await pickFile('.xlsx,.csv,.txt');if(f)importFile(f);};
+ $('#t_tpl').onclick=async()=>{let j=await call('template');if(j)saveFile(b64toBlob(j.data,j.mime),j.filename);};
+ const dz=$('#t_drop');dz.ondragover=e=>{e.preventDefault();dz.classList.add('on');};dz.ondragleave=()=>dz.classList.remove('on');dz.ondrop=e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('on');document.body.classList.remove('filedrag');let f=e.dataTransfer.files[0];if(f)importFile(f);};
+ $$('[data-exp]').forEach(b=>b.onclick=()=>doExport(b.dataset.exp));$$('[data-mark]').forEach(b=>b.onclick=markExported);}
+function exportFilters(){if(ui.expScope==='filters')return actionFilters();if(ui.expScope==='all')return {school_year:'Όλα'};return {school_year:ui.expYear||S.current_school_year};}
+async function doExport(kind){const j=await call('export',{kind,filters:exportFilters()});if(!j)return;
+ if(!await saveFile(b64toBlob(j.data,j.mime),j.filename))return;
+ toast(`Εξήχθησαν ${plural(j.count,'δράση','δράσεις')}.`+(j.skipped?`\nΠαραλείφθηκαν ${j.skipped} λόγω κανόνων κατηγορίας ή επιλογής ανά δράση.`:''));
+ if(j.pending_ids&&j.pending_ids.length&&await confirmBox(`Να σημειωθούν ως «Περάστηκε» στο Calendar οι ${j.pending_ids.length} δράσεις που μόλις εξήχθησαν;`,'Σήμανση')){let r=await call('actions/bulk',{ids:j.pending_ids,calendar_flag:'Περάστηκε'});if(r)toast(`Σημειώθηκαν ${r.updated} δράσεις.`);}}
+async function markExported(){const j=await api('actions/list',{filters:{...exportFilters(),calendar:'Δεν περάστηκε'}});const ids=j.rows.filter(r=>r.status!=='Ακυρώθηκε'&&calAllowed(r)).map(r=>r.id);
+ if(!ids.length)return toast('Δεν υπάρχουν δράσεις που να χρειάζονται σήμανση Calendar.');
+ if(await confirmBox(`Να σημειωθούν ως «Περάστηκε» ${plural(ids.length,'δράση','δράσεις')} που δεν έχουν περαστεί στο Calendar;`,'Σήμανση')){let r=await call('actions/bulk',{ids,calendar_flag:'Περάστηκε'});if(r)toast(`Σημειώθηκαν ${r.updated} δράσεις.`);}}
+async function importFile(file){
+ if(/\.db$/i.test(file.name))return restoreFromFile(file);
+ if(/\.zip$/i.test(file.name))return updateFromFile(file);
+ if(!/\.(xlsx|csv|txt)$/i.test(file.name))return toast('Επιλέξτε αρχείο .xlsx ή .csv.',true);
+ const data=await readFile(file);const p=await call('import/preview',{name:file.name,data});if(!p)return;
+ const body=`${p.count?`<p>Θα εισαχθούν <b>${plural(p.count,'νέα δράση','νέες δράσεις')}</b> από το αρχείο «${esc(file.name)}».</p>`:'<div class="note bad">Δεν υπάρχουν νέες έγκυρες δράσεις για εισαγωγή.</div>'}
+  ${p.duplicates.length?`<div class="note info">Παραλείπονται ${plural(p.duplicates.length,'διπλότυπη εγγραφή','διπλότυπες εγγραφές')} (υπάρχουν ήδη).</div>`:''}
+  ${p.errors.length?`<div class="note bad"><b>Γραμμές με λάθη (${p.errors.length}) — δεν θα εισαχθούν:</b><br>${p.errors.slice(0,20).map(esc).join('<br>')}${p.errors.length>20?'<br>…':''}</div>`:''}
+  ${p.warnings.length?`<div class="note">${p.warnings.slice(0,10).map(esc).join('<br>')}</div>`:''}
+  ${p.count?`<div class="tblwrap" style="max-height:44vh"><table class="tbl"><thead><tr><th>Γρ.</th><th>Ημερομηνία</th><th>Τίτλος</th><th>Κατηγορία</th><th>Ώρα</th><th>Τάξη</th><th>Κατάσταση</th></tr></thead><tbody>${p.records.map(r=>`<tr><td class="muted">${r._line}</td><td class="date">${disp(r.action_date)}</td><td>${esc(r.title)}</td><td>${esc(r.category)}</td><td>${esc(timeText(r))}</td><td>${esc(r.class_group)}</td><td>${statusChip(r.status)}</td></tr>`).join('')}</tbody></table></div>${p.count>p.records.length?`<p class="small muted">Εμφανίζονται οι πρώτες ${p.records.length}.</p>`:''}`:''}`;
+ modal('Προεπισκόπηση εισαγωγής',body,{wide:true,ok:p.count?(p.count===1?'Εισαγωγή 1 δράσης':`Εισαγωγή ${p.count} δράσεων`):'',onOk:p.count?async()=>{const r=await api('import/apply',{name:file.name,data});suggestCache=null;S.first_run=false;
+  toast(`Εισήχθησαν: ${plural(r.imported,'δράση','δράσεις')}.`+(r.backup?'\nΔημιουργήθηκε αντίγραφο ασφαλείας πριν από την εισαγωγή.':''));ui.filters.school_year='Όλα';ui.filters.special='';go('actions');}:null,cancel:p.count?'Ακύρωση':'Κλείσιμο'});}
+
+/* ================================================================ Δεδομένα & αντίγραφα */
+async function pBackups(){
+ const j=await api('backup/list');const D=S.data,B=S.backup;
+ const src={documents:'Προεπιλογή (Έγγραφα)',custom:'Επιλογή χρήστη',shared:'Από το αρχείο shared_data_path.txt (κοινόχρηστη χρήση)',env:'Από ρύθμιση συστήματος'}[D.source]||D.source;
+ $('#content').innerHTML=`<div class="wrap"><div class="grid2"><div class="card"><h2>Αντίγραφα ασφαλείας</h2><p class="muted">Δημιουργήστε αντίγραφο πριν από μαζικές αλλαγές. Η επαναφορά αντικαθιστά τα τρέχοντα δεδομένα, αφού πρώτα κρατήσει αντίγραφό τους.</p>
+  <div class="row"><button class="btn primary" id="b_new">Δημιουργία αντιγράφου τώρα</button><button class="btn" id="b_up">Επαναφορά από αρχείο…</button><button class="btn" id="b_dl">Λήψη αντιγράφου…</button><button class="btn" id="b_open">Άνοιγμα φακέλου</button></div>
+  <p class="small muted" style="margin:10px 0 0">Η «Επαναφορά από αρχείο» δέχεται και το <b>school_actions.db</b> της παλιάς έκδοσης (v1.x), για μεταφορά των δεδομένων της. Αυτόματα αντίγραφα κρατούνται τα 60 πιο πρόσφατα· τα χειροκίνητα δεν σβήνονται ποτέ.</p></div>
+ <div class="card"><h2>Ημερήσιο αντίγραφο σε άλλο φάκελο</h2><p class="muted">Μία φορά την ημέρα, αυτόματα, σε φάκελο της επιλογής σας (π.χ. USB, OneDrive, δίσκος δικτύου). Κρατούνται τα 60 πιο πρόσφατα.</p>
+  <div class="row"><input id="b_ext" value="${esc(B.folder)}" class="grow" placeholder="Δεν έχει οριστεί φάκελος" readonly><button class="btn" id="b_pick">Επιλογή…</button>${B.folder?'<button class="btn" id="b_extnow">Αντίγραφο τώρα</button><button class="btn danger" id="b_extoff">Απενεργοποίηση</button>':''}</div>
+  ${B.last?`<p class="small muted" style="margin:8px 0 0">Τελευταίο: ${disp(B.last)}</p>`:''}</div></div>
+ <div class="card" style="margin-top:14px"><h2>Φάκελος δεδομένων</h2><p class="muted">Εδώ βρίσκονται η βάση (data\\school_actions.db), τα αντίγραφα (backups) και οι εξαγωγές (exports). Ενημερώσεις και απεγκατάσταση της εφαρμογής δεν τον αγγίζουν.</p>
+  <div class="row"><code style="background:#F4F7F6;border:1px solid var(--line);border-radius:6px;padding:5px 9px">${esc(D.root)}</code><span class="small muted">${esc(src)}</span></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="d_open">Άνοιγμα φακέλου</button>${['documents','custom'].includes(D.source)?`<button class="btn" id="d_move">Αλλαγή φακέλου…</button>${D.source==='custom'?'<button class="btn" id="d_def">Επιστροφή στα Έγγραφα</button>':''}`:''}</div>
+  <p class="small muted" style="margin:10px 0 0"><b>Κοινή χρήση από πολλούς υπολογιστές:</b> ορίστε σε όλους τον ίδιο κοινόχρηστο φάκελο (π.χ. στον διακομιστή του σχολείου). Η εφαρμογή επιτρέπει να είναι ανοιχτή σε έναν υπολογιστή κάθε φορά και ενημερώνει ποιος την έχει ανοιχτή. Μπορείτε να επιλέξετε και τον φάκελο <b>Shared</b> της παλιάς φορητής έκδοσης· τα δεδομένα του χρησιμοποιούνται αυτούσια.</p></div>
+ <div class="card"><h2>Αντίγραφα (${j.backups.length})</h2>${j.backups.length?`<div class="tblwrap" style="max-height:420px"><table class="tbl"><thead><tr><th>Ημερομηνία</th><th>Είδος</th><th class="num">Μέγεθος</th><th>Αρχείο</th><th></th></tr></thead><tbody>
+  ${j.backups.map(b=>`<tr><td class="date">${esc(b.when)}</td><td>${esc(b.kind)}</td><td class="num">${(b.size/1024).toFixed(0)} KB</td><td class="small muted">${esc(b.name)}</td><td style="white-space:nowrap;text-align:right"><button class="btn small" data-rs="${esc(b.name)}">Επαναφορά</button> <button class="btn small" data-bd="${esc(b.name)}">Λήψη</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Δεν υπάρχουν ακόμη αντίγραφα.</p>'}</div></div>`;
+ $('#b_new').onclick=async()=>{if(await call('backup/create',{},'Το αντίγραφο δημιουργήθηκε.'))pBackups();};$('#b_up').onclick=()=>restoreFromFile();
+ $('#b_dl').onclick=async()=>{let k=await call('backup/current');if(k)saveFile(b64toBlob(k.data,k.mime),k.filename);};
+ $('#b_open').onclick=()=>call('open',{what:'backups'});$('#d_open').onclick=()=>call('open',{what:'data'});
+ $('#b_pick').onclick=()=>folderPicker('Φάκελος ημερήσιων αντιγράφων',B.folder,async p=>{let r=await api('backup/settings',{folder:p});S.backup.folder=p;S.backup.last=r.written?S.today:'';toast('Ορίστηκε φάκελος ημερήσιων αντιγράφων.'+(r.written?'\nΓράφτηκε το σημερινό αντίγραφο.':''));pBackups();});
+ $('#b_extnow')&&($('#b_extnow').onclick=async()=>{let r=await call('backup/external-now');if(r)toast('Γράφτηκε: '+r.written);});
+ $('#b_extoff')&&($('#b_extoff').onclick=async()=>{if(await call('backup/settings',{folder:''},'Τα ημερήσια αντίγραφα απενεργοποιήθηκαν.')){S.backup.folder='';pBackups();}});
+ $$('[data-rs]').forEach(b=>b.onclick=async()=>{if(!await confirmBox(`Επαναφορά από το αντίγραφο:\n${b.dataset.rs}\n\nΤα τρέχοντα δεδομένα θα αντικατασταθούν (κρατείται πρώτα αντίγραφό τους).`,'Επαναφορά',true))return;
+  let r=await call('backup/restore',{name:b.dataset.rs});if(r){await refreshState();toast(`Η επαναφορά ολοκληρώθηκε (${r.count} δράσεις).`);pBackups();renderFrame();}});
+ $$('[data-bd]').forEach(b=>b.onclick=async()=>{let k=await call('backup/download',{name:b.dataset.bd});if(k)saveFile(b64toBlob(k.data,k.mime),k.filename);});
+ $('#d_move')&&($('#d_move').onclick=()=>folderPicker('Νέος φάκελος δεδομένων',D.root,async(p,info)=>{
+  let mode=info&&info.has_data?'use':'copy';
+  if(mode==='use'&&!await confirmBox(`Ο φάκελος περιέχει ήδη δεδομένα της εφαρμογής.\n\nΝα χρησιμοποιηθούν αυτά τα δεδομένα; (Τα τρέχοντα δεδομένα παραμένουν στον παλιό φάκελο.)`,'Χρήση δεδομένων φακέλου'))return false;
+  if(mode==='copy'&&!await confirmBox(`Τα δεδομένα θα αντιγραφούν στον φάκελο:\n${p}\n\nκαι η εφαρμογή θα χρησιμοποιεί στο εξής εκείνον. Ο παλιός φάκελος δεν σβήνεται.`,'Μεταφορά'))return false;
+  S=await api('datadir/set',{path:p,mode});toast('Ο φάκελος δεδομένων άλλαξε.');ui.checked.clear();go('backups');},true));
+ $('#d_def')&&($('#d_def').onclick=async()=>{if(!await confirmBox(`Επιστροφή στον προεπιλεγμένο φάκελο:\n${D.documents_default}\n\nΑν εκεί δεν υπάρχουν δεδομένα, θα αντιγραφούν τα τρέχοντα.`))return;let r=await call('datadir/set',{mode:'default'});if(r){S=r;go('backups');}});}
+async function restoreFromFile(file){
+ file=file||await pickFile('.db');if(!file)return;
+ if(!await confirmBox(`Επαναφορά δεδομένων από το αρχείο «${file.name}»;\n\nΤα τρέχοντα δεδομένα θα αντικατασταθούν (κρατείται πρώτα αντίγραφό τους στα αντίγραφα ασφαλείας).`,'Επαναφορά',true))return;
+ const data=await readFile(file);const r=await call('backup/upload',{name:file.name,data});
+ if(r){await refreshState();suggestCache=null;toast(`Τα δεδομένα φορτώθηκαν (${r.count} δράσεις).`);ui.filters.school_year=S.current_school_year;go('home');}}
+async function folderPicker(title,start,onPick,showData){
+ let cur=start||'';
+ const draw=async path=>{let j;try{j=await api('fs/list',{path});}catch(e){toast(e.message,true);if(path){return draw('');}return;}cur=j.path;
+  const body=`${j.path?`<div class="small" style="margin-bottom:6px">${j.crumbs.map(c=>`<button type="button" class="btn link small" data-p="${esc(c.path)}">${esc(c.label)}</button>`).join(' › ')}</div>`:''}
+   <div class="fsl">${j.path?`<button type="button" data-p="${esc(j.parent)}">⬑ Επάνω</button>`:''}${j.places.map(p=>`<button type="button" data-p="${esc(p.path)}">⭐ ${esc(p.label)}</button>`).join('')}${j.drives.map(p=>`<button type="button" data-p="${esc(p.path)}">💽 ${esc(p.label)}</button>`).join('')}
+   ${j.dirs.map(d=>`<button type="button" data-p="${esc(d.path)}">📁 ${esc(d.name)}</button>`).join('')}${j.path&&!j.dirs.length?'<div class="muted small" style="padding:8px">Κανένας υποφάκελος.</div>':''}</div>
+   ${j.path?`<div class="row" style="margin-top:8px"><input id="fs_new" placeholder="Όνομα νέου υποφακέλου"><button type="button" class="btn small" id="fs_mk">Δημιουργία</button></div>
+   <p class="small" style="margin:8px 0 0">Επιλογή: <b>${esc(j.path)}</b> ${j.writable?'':'<span style="color:var(--danger)">(δεν επιτρέπεται εγγραφή)</span>'}${showData&&j.has_data?'<br><span style="color:var(--ok)">✓ Ο φάκελος περιέχει δεδομένα της εφαρμογής.</span>':''}</p>`:'<p class="small muted">Επιλέξτε τοποθεσία.</p>'}`;
+  const d=modal(title,body,{ok:'Επιλογή αυτού του φακέλου',wide:'min(720px,95vw)',onOk:async()=>{if(!j.path||!j.writable)throw Error('Επιλέξτε φάκελο με δικαίωμα εγγραφής.');return onPick(j.path,j);}});
+  d.querySelector('[data-ok]').disabled=!j.path||!j.writable;
+  $$('#dialog [data-p]').forEach(b=>b.onclick=()=>draw(b.dataset.p));
+  $('#fs_mk')&&($('#fs_mk').onclick=async()=>{try{let r=await api('fs/mkdir',{parent:j.path,name:$('#fs_new').value});draw(r.path);}catch(e){toast(e.message,true);}});};
+ draw(cur);}
+
+/* ================================================================ Ρυθμίσεις */
+let catWork=null;
+async function pSettings(){
+ const F=S.features;catWork=catWork||{cats:[...S.categories],cfg:structuredClone(S.category_config),renames:{},sel:S.categories[0]};
+ const fc=(k,t,h)=>`<label class="check"><input type="checkbox" data-f="${k}" ${F[k]?'checked':''}><span>${t}${h?`<small>${h}</small>`:''}</span></label>`;
+ $('#content').innerHTML=`<div class="wrap"><div class="grid2"><div>
+ <div class="card"><h2>Γενικά</h2><label class="field"><span>Όνομα σχολικής μονάδας</span><input id="s_name" value="${esc(S.school_name)}"></label>
+  <div class="row"><label class="field"><span>Ενεργό σχολικό έτος</span><select id="s_year">${S.school_years.map(y=>opt(y,y,S.current_school_year)).join('')}</select></label><button class="btn small" id="s_ny" style="margin-top:8px">Προσθήκη σχολικού έτους</button></div>
+  <p class="small muted" style="margin:0">Το ενεργό έτος προτείνεται στις Δράσεις, στον Οδηγό και στις Εκτυπώσεις. Κάθε δράση αντιστοιχίζεται αυτόματα στο έτος της ημερομηνίας της.</p></div>
+ <div class="card"><h2>Ενεργές λειτουργίες</h2>${fc('enable_csv','Γενικό CSV εφαρμογής')}${fc('enable_website_export','Πίνακας ιστοσελίδας / Ninja Tables')}${fc('enable_google_calendar_export','Google Calendar CSV')}${fc('enable_ics_export','Αρχείο ICS ημερολογίου')}
+  <p class="small muted" style="margin:6px 0 0">Όταν μια λειτουργία απενεργοποιείται, τα αντίστοιχα κουμπιά και επιλογές κρύβονται.</p>
+  <h3>Ασφάλεια</h3>${fc('auto_backup_before_import','Αντίγραφο πριν από εισαγωγή CSV / XLSX')}${fc('skip_duplicate_imports','Παράλειψη διπλότυπων στην εισαγωγή','Διπλότυπο: ίδια ημερομηνία, ίδιος τίτλος και ίδια ώρα έναρξης.')}${fc('auto_backup_before_delete','Αντίγραφο πριν από διαγραφή δράσεων')}
+  <h3>Ενημερώσεις</h3>${fc('check_updates_on_startup','Αυτόματος έλεγχος για νέα έκδοση (μία φορά την ημέρα)','Στέλνεται μόνο αίτημα ανάγνωσης στο GitHub· κανένα στοιχείο του σχολείου.')}
+  <div class="row" style="margin-top:6px"><button class="btn small" id="s_upd">Έλεγχος τώρα</button><button class="btn small" id="s_updf">Ενημέρωση από αρχείο…</button><button class="btn small" id="s_prev">Προηγούμενες εκδόσεις</button></div></div>
+ <div class="row"><button class="btn primary" id="s_save">Αποθήκευση ρυθμίσεων</button></div></div>
+ <div class="card"><h2>Κατηγορίες δράσεων</h2><p class="muted">Προσθήκη, μετονομασία, διαγραφή, σειρά και ιδιότητες. Το «Άλλο» μένει πάντα τελευταίο. Δράσεις κατηγορίας που διαγράφεται μεταφέρονται στο «Άλλο».</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div class="catlist" id="c_list"></div><div class="row" style="margin-top:8px"><input id="c_new" placeholder="Νέα κατηγορία" class="grow"><button class="btn small" id="c_add">Προσθήκη</button></div></div><div id="c_props"></div></div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" id="c_save">Αποθήκευση κατηγοριών</button><button class="btn" id="c_undo">Αναίρεση αλλαγών</button></div></div></div></div>`;
+ $('#s_ny').onclick=()=>addYearDialog(()=>pSettings());
+ $('#s_save').onclick=async()=>{const feats={};$$('[data-f]').forEach(c=>feats[c.dataset.f]=c.checked);const r=await call('settings/save',{school_name:$('#s_name').value,current_school_year:$('#s_year').value,features:feats},'Οι ρυθμίσεις αποθηκεύτηκαν.');if(r){S=r;ui.filters.school_year=S.current_school_year;ui.guideYear=null;ui.rep.school_year=null;renderFrame();}};
+ $('#s_upd').onclick=checkUpdate;$('#s_updf').onclick=async()=>{let f=await pickFile('.zip');if(f)updateFromFile(f);};$('#s_prev').onclick=previousVersions;
+ drawCats();}
+function drawCats(){const W=catWork;
+ $('#c_list').innerHTML=W.cats.map((c,i)=>`<div data-ci="${i}" class="${c===W.sel?'on':''}"><span class="grow">${esc((W.cfg[c]?.icon?W.cfg[c].icon+' ':'')+c)}</span>${c!=='Άλλο'?`<button class="btn small" data-mv="${i}:-1" title="Πάνω">↑</button><button class="btn small" data-mv="${i}:1" title="Κάτω">↓</button>`:''}</div>`).join('');
+ $$('[data-ci]').forEach(d=>d.onclick=e=>{if(e.target.closest('button'))return;W.sel=W.cats[+d.dataset.ci];drawCats();});
+ $$('[data-mv]').forEach(b=>b.onclick=()=>{let [i,dir]=b.dataset.mv.split(':').map(Number),j=i+dir;if(j<0||j>=W.cats.length-1)return;[W.cats[i],W.cats[j]]=[W.cats[j],W.cats[i]];drawCats();});
+ $('#c_add').onclick=()=>{let v=$('#c_new').value.trim();if(!v)return;if(W.cats.includes(v))return toast('Υπάρχει ήδη αυτή η κατηγορία.',true);W.cats.splice(W.cats.length-1,0,v);W.cfg[v]={internal:false,app_csv:true,website:true,google:true,ics:true,reports:true,icon:''};W.sel=v;drawCats();};
+ $('#c_save').onclick=async()=>{const r=await call('categories/save',{categories:W.cats,config:W.cfg,renames:W.renames},'Οι κατηγορίες αποθηκεύτηκαν.');if(r){S=r;catWork=null;pSettings();}};
+ $('#c_undo').onclick=()=>{catWork=null;pSettings();};
+ const c=W.sel,cf=W.cfg[c]||{};if(!c){$('#c_props').innerHTML='';return;}
+ const ck=(k,t,dis)=>`<label class="check"><input type="checkbox" data-ck="${k}" ${cf[k]!==false&&cf[k]?'checked':''} ${dis?'disabled':''}> ${t}</label>`;
+ const fixed=c==='Εσωτερική Αξιολόγηση';
+ $('#c_props').innerHTML=`<div class="sect"><b>${esc(c)}</b>${c!=='Άλλο'?`<label class="field"><span>Όνομα</span><input id="c_name" value="${esc(c)}"></label>`:''}
+  ${ck('internal','Εσωτερικής χρήσης (🔒)',fixed)}${ck('website','Εξαγωγή σε πίνακα ιστοσελίδας',fixed)}${ck('google','Εξαγωγή σε Google Calendar',fixed)}${ck('ics','Εξαγωγή σε ICS',fixed)}${ck('reports','Εμφάνιση στις εκτυπώσεις / αναφορές')}
+  <label class="field" style="margin-top:6px"><span>Εικονίδιο ένδειξης</span><select id="c_icon">${S.icon_choices.map(([i,t])=>opt(i,(i?i+' ':'')+t,cf.icon||'')).join('')}</select></label>
+  ${fixed?'<p class="small muted" style="margin:0">Η «Εσωτερική Αξιολόγηση» δεν εξάγεται ποτέ σε ημερολόγια ή ιστοσελίδα.</p>':''}
+  ${c!=='Άλλο'?'<button class="btn small danger" id="c_del">Διαγραφή κατηγορίας</button>':''}</div>`;
+ $$('[data-ck]').forEach(x=>x.onchange=()=>{cf[x.dataset.ck]=x.checked;if(x.dataset.ck==='internal'&&x.checked&&!cf.icon){cf.icon='🔒';}W.cfg[c]=cf;drawCats();});
+ $('#c_icon').onchange=e=>{cf.icon=e.target.value;W.cfg[c]=cf;drawCats();};
+ $('#c_name')&&($('#c_name').onchange=e=>{let v=e.target.value.trim();if(!v||v===c)return;if(W.cats.includes(v)){toast('Υπάρχει ήδη αυτή η κατηγορία.',true);e.target.value=c;return;}
+  let orig=Object.keys(W.renames).find(k=>W.renames[k]===c)||c;if(S.categories.includes(orig))W.renames[orig]=v;W.cats[W.cats.indexOf(c)]=v;W.cfg[v]=cf;delete W.cfg[c];W.sel=v;drawCats();});
+ $('#c_del')&&($('#c_del').onclick=async()=>{if(!await confirmBox(`Να διαγραφεί η κατηγορία «${c}»;\nΟι δράσεις της θα μεταφερθούν στο «Άλλο» όταν αποθηκεύσετε.`,'Διαγραφή',true))return;W.cats=W.cats.filter(x=>x!==c);delete W.cfg[c];W.sel=W.cats[0];drawCats();});}
+
+/* ---------- ενημερώσεις ---------- */
+async function checkUpdate(){const j=await call('update/online');if(!j)return;
+ if(!j.newer){toast('Έχετε την τελευταία έκδοση ('+j.current+').');return;}S.update=j.latest;renderFrame();showUpdate(j.latest);}
+function showUpdate(u){modal('Νέα έκδοση '+u.version,`<p>Τρέχουσα έκδοση: <b>${esc(S.version)}</b> → νέα: <b>${esc(u.version)}</b></p><div class="note info" style="white-space:pre-wrap;max-height:40vh;overflow:auto;max-width:640px">${esc(u.notes||'')}</div>
+ <p class="small muted">Η εφαρμογή θα ενημερωθεί και θα ξανανοίξει μόνη της. Τα δεδομένα δεν αγγίζονται· κρατείται αντίγραφο της τρέχουσας έκδοσης για επαναφορά.</p>`,{ok:'Λήψη και εγκατάσταση τώρα',onOk:async()=>{await applyUpdate({online:true});}});}
+async function applyUpdate(data){const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#24504Fee;color:#fff;display:grid;place-items:center;z-index:100;font-size:18px;text-align:center';ov.innerHTML='Ενημέρωση εφαρμογής…<br><small>Η σελίδα θα ανανεωθεί σε λίγα δευτερόλεπτα.</small>';document.body.append(ov);
+ try{const j=await api('update/apply',data);ov.innerHTML='Εγκαταστάθηκε η έκδοση '+esc(j.version)+'.<br><small>Επανεκκίνηση…</small>';let n=0;const t=setInterval(async()=>{n++;try{let r=await fetch('/',{cache:'no-store'});if(r.ok&&n>2){clearInterval(t);location.reload();}}catch(e){}if(n>60){clearInterval(t);ov.innerHTML='Κλείστε και ανοίξτε ξανά την εφαρμογή.';}},1000);}
+ catch(e){ov.remove();toast(e.message,true);}}
+async function updateFromFile(file){const data=await readFile(file);const j=await call('update/check',{data});if(!j)return;
+ if(!j.newer&&!await confirmBox(j.same?`Η έκδοση ${j.version} είναι ήδη εγκατεστημένη. Να εγκατασταθεί ξανά;`:`Το αρχείο περιέχει παλαιότερη έκδοση (${j.version}) από την τρέχουσα (${j.current}). Να εγκατασταθεί;`,'Εγκατάσταση',true))return;
+ if(j.newer&&!await confirmBox(`Ενημέρωση από ${j.current} σε ${j.version};\n\n${j.notes||''}`,'Ενημέρωση'))return;applyUpdate({data});}
+async function previousVersions(){const j=await call('update/backups');if(!j)return;
+ modal('Προηγούμενες εκδόσεις',j.backups.length?`<p class="muted">Τρέχουσα έκδοση: ${esc(j.current)}. Η επαναφορά αλλάζει μόνο την εφαρμογή, όχι τα δεδομένα.</p><table class="tbl"><thead><tr><th>Έκδοση</th><th>Αποθηκεύτηκε</th><th></th></tr></thead><tbody>${j.backups.map(b=>`<tr><td>${esc(b.version)}</td><td>${esc(b.date)}</td><td><button class="btn small" data-rb="${esc(b.name)}">Επαναφορά</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">Δεν υπάρχουν αποθηκευμένες προηγούμενες εκδόσεις. Δημιουργούνται αυτόματα σε κάθε ενημέρωση.</p>',{cancel:'Κλείσιμο'});
+ $$('[data-rb]').forEach(b=>b.onclick=async()=>{$('#dialog').close();if(await confirmBox('Επαναφορά της εφαρμογής στην επιλεγμένη έκδοση;','Επαναφορά',true))rollback(b.dataset.rb);});}
+async function rollback(name){const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#24504Fee;color:#fff;display:grid;place-items:center;z-index:100;font-size:18px';ov.textContent='Επαναφορά έκδοσης…';document.body.append(ov);
+ try{await api('update/rollback',{name});setTimeout(()=>location.reload(),6000);}catch(e){ov.remove();toast(e.message,true);}}
+
+/* ================================================================ Οδηγίες */
+function pHelp(){
+ $('#content').innerHTML=`<div class="wrap"><div class="grid2"><div class="card"><h2>Οδηγός χρήσης</h2><p class="muted">Αναλυτικές οδηγίες για όλες τις λειτουργίες, με τα πρώτα βήματα και συχνές ερωτήσεις.</p><button class="btn primary" id="h_man">Άνοιγμα οδηγού χρήσης</button></div>
+ <div class="card"><h2>Σχετικά</h2><p style="margin:0 0 6px"><b>${esc(S.app_name)}</b> • έκδοση ${esc(S.version)}</p><p class="small muted" style="margin:0 0 10px">${esc(S.author)}</p>
+  <p class="small" style="margin:0">Λειτουργεί τοπικά στον υπολογιστή, χωρίς σύνδεση στο Internet. Τα δεδομένα δεν αποστέλλονται πουθενά.</p><div class="row" style="margin-top:10px"><button class="btn small" id="h_upd">Έλεγχος για νέα έκδοση</button></div></div>
+ <div class="card"><h2>Φάκελοι</h2><div class="row"><button class="btn small" data-o="data">Δεδομένα</button><button class="btn small" data-o="backups">Αντίγραφα</button><button class="btn small" data-o="exports">Εξαγωγές</button><button class="btn small" data-o="app">Εφαρμογή</button></div><p class="small muted" style="margin:10px 0 0">${esc(S.data.root)}</p></div>
+ <div class="card"><h2>Συντομεύσεις</h2><p class="small" style="margin:0;line-height:1.9"><kbd>Ctrl</kbd>+<kbd>N</kbd> νέα δράση • <kbd>Ctrl</kbd>+<kbd>F</kbd> αναζήτηση δράσεων • <kbd>Ctrl</kbd>+<kbd>S</kbd> αποθήκευση φόρμας • <kbd>Esc</kbd> κλείσιμο παραθύρου διαλόγου • Διπλό κλικ σε δράση: επεξεργασία • Διπλό κλικ σε ημέρα του μήνα: νέα δράση</p></div>
+ <div class="card" style="grid-column:1/-1"><h2>Άδεια χρήσης και πνευματικά δικαιώματα</h2><p class="small" style="margin:0">Η εφαρμογή διατίθεται ως εκπαιδευτικό εργαλείο για σχολική χρήση. Επιτρέπεται η δωρεάν χρήση και διανομή σε σχολεία και εκπαιδευτικούς, χωρίς εμπορική εκμετάλλευση, με διατήρηση της αναφοράς δημιουργίας.<br>Αρχική ιδέα – επιμέλεια: Σταμάτης Κοκολόγος. Υλοποίηση: Σταμάτης Κοκολόγος, με αξιοποίηση εργαλείων τεχνητής νοημοσύνης.<br>Τα δεδομένα ανήκουν στη σχολική μονάδα που τα καταχωρίζει· ο/η χρήστης έχει την ευθύνη τήρησης αντιγράφων ασφαλείας σύμφωνα με τις οδηγίες της σχολικής μονάδας.</p></div></div></div>`;
+ $('#h_man').onclick=()=>window.open('/manual','_blank','width=1000,height=860');$('#h_upd').onclick=checkUpdate;$$('[data-o]').forEach(b=>b.onclick=()=>call('open',{what:b.dataset.o}));}
+
+/* ================================================================ γενικά */
+document.addEventListener('keydown',e=>{if($('#dialog').open||$('#dialog2').open)return;
+ if(e.ctrlKey&&(e.key==='n'||e.key==='ν')){e.preventDefault();actionForm(null);}
+ if(e.ctrlKey&&(e.key==='f'||e.key==='φ')&&page==='actions'){e.preventDefault();$('#a_search')?.focus();}});
+let dragN=0;document.addEventListener('dragenter',e=>{if([...e.dataTransfer.types].includes('Files')){dragN++;document.body.classList.add('filedrag');}});
+document.addEventListener('dragleave',()=>{if(--dragN<=0){dragN=0;document.body.classList.remove('filedrag');}});
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{e.preventDefault();dragN=0;document.body.classList.remove('filedrag');let f=e.dataTransfer.files[0];if(f)importFile(f);});
+$('#exit').onclick=async()=>{if(await confirmBox('Κλείσιμο της εφαρμογής;','Έξοδος')){try{await api('shutdown');}catch(e){}document.body.innerHTML='<div style="display:grid;place-items:center;height:100vh;font:16px Segoe UI;color:#2F6F73">Η εφαρμογή έκλεισε. Μπορείτε να κλείσετε αυτό το παράθυρο.</div>';setTimeout(()=>window.close(),300);}};
+$('#newver').onclick=()=>S.update&&showUpdate(S.update);
+window.addEventListener('pagehide',()=>navigator.sendBeacon('/api/bye?t='+encodeURIComponent(token)));
+setInterval(()=>api('ping').catch(()=>{}),60000);
+(async()=>{try{await refreshState();}catch(e){$('#content').innerHTML=`<div class="note bad">${esc(e.message)}</div>`;return;}
+ if(!ui.filters.school_year||(ui.filters.school_year!=='Όλα'&&!S.school_years.includes(ui.filters.school_year)))ui.filters.school_year=S.current_school_year;
+ if(S.first_run)page='home';await render();if(S.update)toast('Διαθέσιμη νέα έκδοση '+S.update.version+'. Πατήστε «Νέα έκδοση» κάτω αριστερά.');})();
+</script>

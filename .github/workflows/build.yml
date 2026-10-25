@@ -1,0 +1,129 @@
+# Έλεγχος σε πραγματικά Windows (64-bit και 32-bit Python) σε κάθε αλλαγή.
+# Όταν αλλάζει η έκδοση (VERSION στο src/core.py), δημοσιεύεται αυτόματα νέο Release με
+# Setup.exe, φορητό zip και αρχείο ενημέρωσης.
+name: Έλεγχος και πακέτα
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Κατασκευή runtime (x64 + x86) και πακέτων
+        run: python -X utf8 tools/build_package.py
+
+      - name: Έλεγχοι με το runtime 64-bit
+        working-directory: dist/Programma_Draseon
+        run: |
+          .\runtime-x64\python.exe -X utf8 src\preflight.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $out = .\runtime-x64\python.exe -X utf8 -m unittest discover -s tests -v 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { Write-Host ("::error title=Τεστ x64::" + ((($out -split "`n") | Select-Object -Last 40) -join '%0A')); exit 1 }
+
+      - name: Έλεγχοι με το runtime 32-bit
+        working-directory: dist/Programma_Draseon
+        run: |
+          .\runtime-x86\python.exe -X utf8 -c "import struct;print(struct.calcsize('P')*8,'bit')"
+          .\runtime-x86\python.exe -X utf8 src\preflight.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $out = .\runtime-x86\python.exe -X utf8 -m unittest discover -s tests -v 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { Write-Host ("::error title=Τεστ x86::" + ((($out -split "`n") | Select-Object -Last 40) -join '%0A')); exit 1 }
+
+      - name: Έλεγχος λειτουργίας (υπηρεσία, API, εξαγωγές)
+        working-directory: dist/Programma_Draseon
+        run: |
+          New-Item -ItemType Directory -Force tools | Out-Null
+          Copy-Item ..\..\tools\smoke.py tools\
+          $out = .\runtime-x64\python.exe -X utf8 tools\smoke.py 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { Write-Host ("::error title=Έλεγχος λειτουργίας::" + ((($out -split "`n") | Select-Object -Last 30) -join '%0A')); exit 1 }
+          Remove-Item -Recurse -Force tools -ErrorAction SilentlyContinue
+          Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+
+      - name: Setup.exe (Inno Setup)
+        run: |
+          $v = (Get-Content dist/VERSION.txt).Split('-')[0]
+          try { Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/Greek.isl' -OutFile installer\Greek.isl } catch { Write-Host "::warning::Greek.isl δεν κατέβηκε: $_" }
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          $out = & $iscc "/DAppVersion=$v" "/DSourceDir=..\dist\Programma_Draseon" installer\pds.iss 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) {
+            $tail = ($out -split "`n" | Select-Object -Last 25) -join '%0A'
+            Write-Host "::error title=Inno Setup::$tail"
+            exit 1
+          }
+
+      - name: Δοκιμαστική σιωπηλή εγκατάσταση και απεγκατάσταση
+        run: |
+          $setup = Get-ChildItem dist\Programma_Draseon_Setup_*.exe | Select-Object -First 1
+          Start-Process $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TASKS=' -Wait
+          $app = "$env:LOCALAPPDATA\Programs\ProgrammaDraseon"
+          if (-not (Test-Path "$app\runtime\pythonw.exe")) { throw "Η εγκατάσταση δεν δημιούργησε την εφαρμογή" }
+          if (Test-Path "$app\runtime-x64") { throw "Δεν πρέπει να εγκαθίστανται και τα δύο runtime" }
+          & "$app\runtime\python.exe" -X utf8 "$app\src\preflight.py"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $un = Get-ChildItem "$app\unins*.exe" | Select-Object -First 1
+          Start-Process $un.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          if (Test-Path "$app\src") { throw "Η απεγκατάσταση άφησε τον κώδικα" }
+          Write-Host "Εγκατάσταση/απεγκατάσταση OK"
+
+      - name: Αντίγραφο με σταθερό όνομα (μόνιμος σύνδεσμος λήψης)
+        run: |
+          $setup = Get-ChildItem dist\Programma_Draseon_Setup_*.exe | Select-Object -First 1
+          Copy-Item $setup.FullName dist\Programma_Draseon_Setup.exe
+
+      - name: Είναι νέα έκδοση;
+        id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = (Get-Content dist/VERSION.txt).Split('-')[0]
+          "tag=v$v" >> $env:GITHUB_OUTPUT
+          gh release view "v$v" -R ${{ github.repository }} *> $null
+          if ($LASTEXITCODE -eq 0) { "new=false" >> $env:GITHUB_OUTPUT; Write-Host "Η v$v υπάρχει ήδη." } else { "new=true" >> $env:GITHUB_OUTPUT; Write-Host "Νέα έκδοση v$v" }
+          exit 0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pds-${{ github.sha }}
+          path: |
+            dist/Programma_Draseon_Setup_*.exe
+            dist/Programma_Draseon_*_Portable.zip
+            dist/PDS_Enimerosi_*.zip
+          retention-days: 14
+
+      - name: Δημοσίευση έκδοσης
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.ver.outputs.new == 'true') || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: Πρόγραμμα Δράσεων Σχολείου ${{ steps.ver.outputs.tag }}
+          make_latest: true
+          body_path: dist/RELEASE_NOTES.md
+          files: |
+            dist/Programma_Draseon_Setup_*.exe
+            dist/Programma_Draseon_Setup.exe
+            dist/Programma_Draseon_*_Portable.zip
+            dist/PDS_Enimerosi_*.zip
