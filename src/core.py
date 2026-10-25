@@ -15,7 +15,7 @@ import threading
 import unicodedata
 from datetime import date, datetime, timedelta
 
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 APP_NAME = 'Πρόγραμμα Δράσεων Σχολείου'
 APP_AUTHOR = 'Αρχική ιδέα – επιμέλεια: Σταμάτης Κοκολόγος | Υλοποίηση: Σταμάτης Κοκολόγος, με αξιοποίηση εργαλείων τεχνητής νοημοσύνης'
 DB_NAME = 'school_actions.db'

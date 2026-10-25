@@ -1,0 +1,9 @@
+ΠΡΟΓΡΑΜΜΑ ΔΡΑΣΕΩΝ ΣΧΟΛΕΙΟΥ — 2.0.1
+
+• Μόνιμοι σύνδεσμοι λήψης, που οδηγούν πάντα στην τελευταία έκδοση:
+  - Εγκατάσταση: .../releases/latest/download/Programma_Draseon_Setup.exe
+  - Αρχείο ενημέρωσης (για υπολογιστές χωρίς Internet): .../releases/latest/download/PDS_Enimerosi.zip
+  - Φορητή έκδοση: .../releases/latest/download/Programma_Draseon_Portable.zip
+  (όπου ... = https://github.com/stam1966/Imerologio)
+
+Τα δεδομένα σας δεν αλλάζουν με την ενημέρωση.

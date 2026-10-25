@@ -123,4 +123,7 @@ if __name__ == '__main__':
         '**Ενημέρωση υπάρχουσας εγκατάστασης:** μέσα στην εφαρμογή, κουμπί «Νέα έκδοση» ή Ρυθμίσεις → «Έλεγχος τώρα» '
         '(χωρίς Internet: «Ενημέρωση από αρχείο…» με το `PDS_Enimerosi_….zip`).\n\n'
         '**Φορητή έκδοση** (USB / κοινόχρηστος φάκελος, χωρίς εγκατάσταση): `Programma_Draseon_…_Portable.zip`.\n\n'
+        'Μόνιμοι σύνδεσμοι (πάντα η τελευταία έκδοση):\n'
+        '- Αρχείο ενημέρωσης: https://github.com/stam1966/Imerologio/releases/latest/download/PDS_Enimerosi.zip\n'
+        '- Φορητή έκδοση: https://github.com/stam1966/Imerologio/releases/latest/download/Programma_Draseon_Portable.zip\n\n'
         '```\n' + notes(v) + '\n```\n', encoding='utf-8')

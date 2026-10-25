@@ -98,6 +98,8 @@ jobs:
         run: |
           $setup = Get-ChildItem dist\Programma_Draseon_Setup_*.exe | Select-Object -First 1
           Copy-Item $setup.FullName dist\Programma_Draseon_Setup.exe
+          Copy-Item (Get-ChildItem dist\PDS_Enimerosi_*.zip | Select-Object -First 1).FullName dist\PDS_Enimerosi.zip
+          Copy-Item (Get-ChildItem dist\Programma_Draseon_*_Portable.zip | Select-Object -First 1).FullName dist\Programma_Draseon_Portable.zip
 
       - name: Είναι νέα έκδοση;
         id: ver
@@ -131,5 +133,7 @@ jobs:
           files: |
             dist/Programma_Draseon_Setup_*.exe
             dist/Programma_Draseon_Setup.exe
+            dist/PDS_Enimerosi.zip
+            dist/Programma_Draseon_Portable.zip
             dist/Programma_Draseon_*_Portable.zip
             dist/PDS_Enimerosi_*.zip

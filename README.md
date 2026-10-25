@@ -6,7 +6,11 @@
 
 **[⬇ Λήψη της τελευταίας έκδοσης (Setup.exe)](https://github.com/stam1966/Imerologio/releases/latest/download/Programma_Draseon_Setup.exe)** και ανοίξτε το αρχείο (Windows 64-bit και 32-bit). Δεν χρειάζονται δικαιώματα διαχειριστή. Αν τα Windows δείξουν «Τα Windows προστάτευσαν τον υπολογιστή σας», πατήστε «Περισσότερες πληροφορίες» → «Εκτέλεση οπωσδήποτε».
 
-Όλες οι εκδόσεις και η φορητή έκδοση (USB / κοινόχρηστος φάκελος): [Releases](https://github.com/stam1966/Imerologio/releases).
+Μόνιμοι σύνδεσμοι (οδηγούν πάντα στην τελευταία έκδοση):
+- Ενημέρωση χωρίς Internet στην εφαρμογή («Ενημέρωση από αρχείο…»): [PDS_Enimerosi.zip](https://github.com/stam1966/Imerologio/releases/latest/download/PDS_Enimerosi.zip)
+- Φορητή έκδοση (USB / κοινόχρηστος φάκελος): [Programma_Draseon_Portable.zip](https://github.com/stam1966/Imerologio/releases/latest/download/Programma_Draseon_Portable.zip)
+
+Όλες οι εκδόσεις: [Releases](https://github.com/stam1966/Imerologio/releases).
 
 **Από την παλιά έκδοση (v1.x):** στην πρώτη εκκίνηση επιλέξτε «Μεταφορά δεδομένων από την παλιά έκδοση» και το αρχείο `school_actions.db` (φάκελος `data` ή `Shared\data`). Όλα μεταφέρονται αυτούσια.
 
