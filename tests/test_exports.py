@@ -207,3 +207,18 @@ class LifelogImport(Base):
         self.assertNotIn('Φετινή καταγραφή.', texts)  # μόνο προηγούμενα σχολικά έτη
         self.assertEqual([i['text'] for i in self.db.lifelog_suggest('2026-10-28', 'δοξολογ')['items']], ['Δοξολογία.'])
         self.assertEqual(self.db.lifelog_years(), ['2024-2025', '2025-2026', '2026-2027'])
+
+
+class Phrases(Base):
+    def test_defaults_edit_reset(self):
+        p = self.db.lifelog_phrases()
+        self.assertFalse(p['customized'])
+        self.assertGreaterEqual(len(p['items']), 60)
+        self.assertEqual(p['items'][0]['text'], 'Έναρξη σχολικού έτους [σχολικό έτος].')
+        self.assertTrue(all(i['group'] in p['groups'] for i in p['items']))
+        q = self.db.set_lifelog_phrases([{'group': 'Συνεδριάσεις', 'text': '  Συνεδρίαση  ΕΔΥ. '}, {'group': '', 'text': 'Κάτι'},
+                                         {'group': 'Συνεδριάσεις', 'text': 'Συνεδρίαση ΕΔΥ.'}, {'text': ''}])
+        self.assertTrue(q['customized'])
+        self.assertEqual(q['items'], [{'group': 'Συνεδριάσεις', 'text': 'Συνεδρίαση ΕΔΥ.'}, {'group': 'Άλλες', 'text': 'Κάτι'}])
+        self.assertEqual(self.db.set_lifelog_phrases([])['items'], [])  # κενή λίστα είναι επιλογή του χρήστη
+        self.assertFalse(self.db.reset_lifelog_phrases()['customized'])

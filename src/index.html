@@ -6,7 +6,7 @@
  --ok:#2F7D3F;--ok-50:#E7F4E9;--warn:#8A6100;--warn-50:#FFF4D6;--danger:#B8382A;--danger-50:#FCEAE7;--int:#8A4B00;--int-50:#FFEFDC;--focus:#2563EB;
  --r:12px;--r-sm:8px;--sh:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);--sh-lg:0 12px 32px rgba(16,24,40,.16);
  --font:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif}
-*{box-sizing:border-box}[hidden]{display:none!important}html,body{height:100%}body{margin:0;font:14px/1.5 var(--font);color:var(--text);background:var(--bg);overflow:hidden;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}[hidden]{display:none!important}a{color:var(--brand);font-weight:600}html,body{height:100%}body{margin:0;font:14px/1.5 var(--font);color:var(--text);background:var(--bg);overflow:hidden;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .app{display:grid;grid-template-columns:240px 1fr;height:100vh}
@@ -141,7 +141,8 @@ details.more2{border:1px solid var(--line);border-radius:10px;padding:0 14px;mar
 .lle{display:grid;grid-template-columns:1fr 34px;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line2)}.lle:last-child{border-bottom:0}.lle p{margin:0;white-space:pre-wrap}
 .llf{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:20px;align-items:start}.llf.one{grid-template-columns:1fr}.llf textarea{min-height:340px}
 .sugg{background:#F8FAF9;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:min(560px,62vh)}.sugg #ll_sl{overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
-.sg{position:relative;text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 30px 8px 10px;cursor:pointer;font-size:13px;line-height:1.4}.sg:hover{border-color:var(--brand);background:var(--brand-50)}.sg.used{opacity:.55}.sgm{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.sgm b{color:var(--warn)}.sgp{position:absolute;right:8px;top:8px;color:var(--brand)}
+.sg{position:relative;text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 30px 8px 10px;cursor:pointer;font-size:13px;line-height:1.4}.sg:hover{border-color:var(--brand);background:var(--brand-50)}.sg.used{opacity:.55}.sgm{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.sgm b{color:var(--warn)}.sgp{position:absolute;right:8px;top:8px;color:var(--brand)}.sg mark{background:var(--gold-50);color:var(--warn);border-radius:4px;padding:0 2px}.sgg{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--brand-700);padding:8px 2px 2px}
+.pel{max-height:56vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 12px 10px}.per{display:grid;grid-template-columns:1fr 200px 34px;gap:8px;align-items:start;padding:4px 0}.per textarea{resize:none;overflow:hidden;min-height:36px}
 .faq details{border-bottom:1px solid var(--line2);padding:4px 0}.faq details:last-child{border-bottom:0}.faq summary{cursor:pointer;padding:8px 0;font-weight:600}.faq p{margin:0 0 10px;color:#3D4A50}
 .dropall{position:fixed;inset:12px;border:3px dashed var(--brand);border-radius:16px;background:#2F6F73d0;color:#fff;display:none;place-items:center;font-size:18px;z-index:90;pointer-events:none}body.filedrag .dropall{display:grid}
 .catrow{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer}.catrow:hover{background:#F4F7F6}.catrow.on{background:var(--brand-50)}.catrow i{width:12px;height:12px;border-radius:4px}
@@ -210,6 +211,7 @@ const MONG=['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Α
 const MONS=['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
 const dt=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);};
 const isoOf=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fold=t=>String(t??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ς/g,'σ');
 const disp=iso=>iso?iso.split('-').reverse().join('/'):'';
 const longDate=iso=>{const d=dt(iso);return `${DOW[d.getDay()]} ${d.getDate()} ${MONG[d.getMonth()]} ${d.getFullYear()}`;};
 const stIdx=s=>Math.max(0,S.statuses.indexOf(s));
@@ -532,7 +534,7 @@ async function pLifelog(){
  $('#l_lock')&&($('#l_lock').onclick=async()=>{await call('lifelog/lock');S.lifelog.unlocked=false;pLifelog();});$('#l_new').onclick=()=>llForm(null);
  $('#l_pr').onclick=async()=>{const q=llQuery();const j=await call('lifelog/report',q);if(j)showPreview('#l_prev',j,()=>api('lifelog/report',{...q,toolbar:true}));};
  $('#l_more').onclick=e=>menu(e.currentTarget,[{label:'Εισαγωγή από αρχείο Word ή Excel…',icon:'upload',run:async()=>{const f=await pickFile('.docx,.xlsx,.csv');if(f)llImport(f);}},
-  {label:'Μεταφορά ολοκληρωμένων δράσεων',icon:'swap',run:llTransfer},'-',{label:'Ρυθμίσεις κωδικού',icon:'gear',run:llSettings}]);
+  {label:'Βασικές φράσεις…',icon:'list',run:()=>phrasesEditor()},{label:'Μεταφορά ολοκληρωμένων δράσεων',icon:'swap',run:llTransfer},'-',{label:'Ρυθμίσεις κωδικού',icon:'gear',run:llSettings}]);
  await loadLL();}
 const llQuery=()=>({search:ui.ll.search,date_from:ui.ll.from,date_to:ui.ll.to,school_year:ui.ll.year==='Όλα'?'':ui.ll.year});
 async function llTransfer(){if(!await confirmBox('Οι δράσεις με κατάσταση «Ολοκληρώθηκε» που δεν έχουν ήδη μεταφερθεί θα γίνουν καταγραφές του Ημερολογίου.','Μεταφορά'))return;const j=await call('lifelog/transfer');if(j){toast(`Μεταφέρθηκαν ${plural(j.count,'καταγραφή','καταγραφές')}.`);loadLL();}}
@@ -563,24 +565,60 @@ function adaptText(text,srcIso,dstIso){
    if(a){if(+b===+a+1&&(+a===s0||+a===s0-1||+a===s0+1))return `${+a+delta}${sep}${+b+delta}`;return m;}
    if(lone&&(+lone===s0||+lone===s0+1))return String(+lone+delta);return m;});}
 
+let phrasesCache=null;
+async function getPhrases(force){if(!phrasesCache||force)phrasesCache=await api('lifelog/phrases');return phrasesCache;}
+function insertText(ta,txt){const cur=ta.value.replace(/\s+$/,''),start=cur?cur.length+1:0;ta.value=cur?cur+'\n'+txt:txt;ta.focus();
+ const i=ta.value.indexOf('[',start),j=i>=0?ta.value.indexOf(']',i):-1;
+ if(i>=0&&j>i)ta.setSelectionRange(i,j+1);else ta.setSelectionRange(ta.value.length,ta.value.length);ta.scrollTop=ta.scrollHeight;}
 function llForm(r){const isNew=!r;r=r||{log_date:S.today,description:''};
  const d=modal(isNew?'Νέα καταγραφή':'Επεξεργασία καταγραφής',`<div class="llf"><div><label class="field"><span>Ημερομηνία</span><input type="date" id="ll_d" value="${esc(r.log_date)}" style="width:190px"></label>
-  <label class="field"><span>Καταγραφή</span><textarea id="ll_t" rows="14" autofocus placeholder="Τι έγινε σήμερα στο σχολείο…">${esc(r.description)}</textarea></label></div>
-  <aside class="sugg" id="ll_sg" hidden><div class="row" style="gap:6px"><b>Από προηγούμενα έτη</b><span class="hint" id="ll_sgn"></span></div>
-   <input type="search" id="ll_sq" placeholder="Αναζήτηση σε όλες τις παλιές καταγραφές…"><div class="hint" id="ll_sgh">Ό,τι γράψατε τέτοιες μέρες άλλες χρονιές. Πατήστε μια πρόταση για να μπει στην καταγραφή· η χρονιά και οι ημερομηνίες προσαρμόζονται αυτόματα.</div><div id="ll_sl"></div></aside></div>`,
+  <label class="field"><span>Καταγραφή</span><textarea id="ll_t" rows="14" autofocus placeholder="Τι έγινε σήμερα στο σχολείο…  Επιλέξτε δεξιά μια έτοιμη φράση ή μια καταγραφή άλλης χρονιάς.">${esc(r.description)}</textarea></label>
+  <p class="hint" style="margin:-4px 0 0">Οι αγκύλες [ … ] είναι κενά: όταν προσθέτετε μια φράση, επιλέγεται το πρώτο κενό· απλώς πληκτρολογήστε. Για το επόμενο κενό κάντε διπλό κλικ πάνω του.</p></div>
+  <aside class="sugg" id="ll_sg"><div class="tabs" style="margin:0 0 2px"><button type="button" data-st="hist">Προηγούμενα έτη <span class="n" id="ll_nh"></span></button><button type="button" data-st="phr">Βασικές φράσεις <span class="n" id="ll_np"></span></button></div>
+   <input type="search" id="ll_sq" placeholder="Αναζήτηση…"><div class="hint" id="ll_sgh"></div><div id="ll_sl"></div></aside></div>`,
  {wide:'min(1180px,96vw)',onOk:async()=>{await api('lifelog/save',{entry:{id:isNew?null:r.id,log_date:$('#ll_d').value,description:$('#ll_t').value}});toast('Αποθηκεύτηκε.');loadLL();}});
  d.addEventListener('keydown',e=>{if(e.ctrlKey&&(e.key==='s'||e.key==='σ')){e.preventDefault();d.querySelector('[data-ok]').click();}});
- let tm,items=[];
- const load=async()=>{let j;try{j=await api('lifelog/suggest',{date:$('#ll_d').value||S.today,search:$('#ll_sq').value});}catch(e){return;}
-  if(!j.has_history){$('#ll_sg').hidden=true;d.querySelector('.llf').classList.add('one');return;}
-  $('#ll_sg').hidden=false;items=j.items;const q=$('#ll_sq').value.trim();
-  $('#ll_sgn').textContent=j.total?`· ${j.total}`:'';$('#ll_sgh').hidden=!!q;
-  $('#ll_sl').innerHTML=items.length?items.map((it,i)=>{const off=it.offset===0?'ίδια μέρα':(Math.abs(it.offset)+(Math.abs(it.offset)===1?' μέρα ':' μέρες ')+(it.offset<0?'νωρίτερα':'αργότερα'));
-   return `<button type="button" class="sg" data-sg="${i}" title="Προσθήκη στην καταγραφή"><span class="sgm">${disp(it.log_date)} · ${q?esc(it.school_year):off}${it.times>1?` · <b>${it.times} φορές</b>`:''}</span>${esc(it.text)}<span class="sgp">${ico('plus','width:15px;height:15px')}</span></button>`;}).join('')
-   :`<p class="hint">${q?'Δεν βρέθηκε κάτι με αυτή την αναζήτηση.':'Δεν υπάρχουν καταγραφές άλλων ετών γύρω από αυτή την ημερομηνία. Δοκιμάστε την αναζήτηση.'}</p>`;
-  $$('[data-sg]').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.sg],ta=$('#ll_t');const txt=adaptText(it.text,it.log_date,$('#ll_d').value||S.today);
-   const cur=ta.value.replace(/\s+$/,'');ta.value=cur?cur+'\n'+txt:txt;ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);ta.scrollTop=ta.scrollHeight;b.classList.add('used');});};
- $('#ll_d').addEventListener('change',load);$('#ll_sq').oninput=()=>{clearTimeout(tm);tm=setTimeout(load,220);};load();}
+ const ta=$('#ll_t');
+ ta.addEventListener('dblclick',()=>{const v=ta.value,p=ta.selectionStart,i=v.lastIndexOf('[',p),j=v.indexOf(']',p-1);if(i>=0&&j>i&&!v.slice(i,j).includes('\n')&&!v.slice(i+1,p).includes(']'))ta.setSelectionRange(i,j+1);});
+ let tm,tab=null,hist=null,phr=null;
+ const drawHist=()=>{const q=$('#ll_sq').value.trim(),items=hist.items;$('#ll_nh').textContent=hist.total||'';
+  $('#ll_sgh').textContent=q?'':'Ό,τι γράψατε τέτοιες μέρες (± 10 ημέρες) άλλες χρονιές. Η χρονιά και οι ημερομηνίες προσαρμόζονται αυτόματα.';
+  $('#ll_sl').innerHTML=!hist.has_history?`<p class="hint">Δεν υπάρχουν ακόμη καταγραφές προηγούμενων ετών. Από του χρόνου θα εμφανίζονται εδώ όσα γράφετε φέτος. Μπορείτε επίσης να φέρετε παλιές καταγραφές από Word ή Excel (κουμπί ⋯ της σελίδας → «Εισαγωγή από αρχείο»).</p>`
+   :items.length?items.map((it,i)=>{const off=it.offset===0?'ίδια μέρα':(Math.abs(it.offset)+(Math.abs(it.offset)===1?' μέρα ':' μέρες ')+(it.offset<0?'νωρίτερα':'αργότερα'));
+    return `<button type="button" class="sg" data-sg="${i}" title="Προσθήκη στην καταγραφή"><span class="sgm">${disp(it.log_date)} · ${q?esc(it.school_year):off}${it.times>1?` · <b>${it.times} φορές</b>`:''}</span>${esc(it.text)}<span class="sgp">${ico('plus','width:15px;height:15px')}</span></button>`;}).join('')
+   :`<p class="hint">${q?'Δεν βρέθηκε κάτι με αυτή την αναζήτηση.':'Δεν υπάρχουν καταγραφές άλλων ετών γύρω από αυτή την ημερομηνία. Δοκιμάστε την αναζήτηση ή τις βασικές φράσεις.'}</p>`;
+  $$('[data-sg]').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.sg];insertText(ta,adaptText(it.text,it.log_date,$('#ll_d').value||S.today));b.classList.add('used');});};
+ const drawPhr=()=>{const w=fold($('#ll_sq').value).split(/\s+/).filter(Boolean);const list=phr.items.map((p,i)=>({...p,i})).filter(p=>w.every(x=>fold(p.text).includes(x)||fold(p.group).includes(x)));
+  $('#ll_np').textContent=phr.items.length||'';$('#ll_sgh').innerHTML=w.length?'':'Έτοιμες φράσεις για συνηθισμένες καταγραφές. <a href="#" id="ll_ed">Επεξεργασία φράσεων</a>';
+  const groups=[...new Set(list.map(p=>p.group))];
+  $('#ll_sl').innerHTML=list.length?groups.map(g=>`<div class="sgg">${esc(g)}</div>`+list.filter(p=>p.group===g).map(p=>`<button type="button" class="sg" data-ph="${p.i}" title="Προσθήκη στην καταγραφή">${esc(p.text).replace(/\[([^\]]*)\]/g,'<mark>[$1]</mark>')}<span class="sgp">${ico('plus','width:15px;height:15px')}</span></button>`).join('')).join('')
+   :`<p class="hint">${phr.items.length?'Δεν βρέθηκε φράση με αυτή την αναζήτηση.':'Δεν υπάρχουν βασικές φράσεις.'}</p>`;
+  $('#ll_ed')&&($('#ll_ed').onclick=e=>{e.preventDefault();phrasesEditor(async()=>{phr=await getPhrases(true);drawPhr();});});
+  $$('[data-ph]').forEach(b=>b.onclick=()=>{insertText(ta,phr.items[+b.dataset.ph].text);b.classList.add('used');});};
+ const draw=()=>{$$('#ll_sg [data-st]').forEach(b=>b.classList.toggle('on',b.dataset.st===tab));$('#ll_sq').placeholder=tab==='hist'?'Αναζήτηση σε όλες τις παλιές καταγραφές…':'Αναζήτηση φράσης…';if(tab==='hist'&&hist)drawHist();if(tab==='phr'&&phr)drawPhr();};
+ const loadHist=async()=>{try{hist=await api('lifelog/suggest',{date:$('#ll_d').value||S.today,search:tab==='hist'?$('#ll_sq').value:''});}catch(e){hist={items:[],total:0,has_history:false};}};
+ $$('#ll_sg [data-st]').forEach(b=>b.onclick=async()=>{if(tab===b.dataset.st)return;tab=b.dataset.st;$('#ll_sq').value='';if(tab==='hist')await loadHist();draw();});
+ $('#ll_d').addEventListener('change',async()=>{await loadHist();draw();});
+ $('#ll_sq').oninput=()=>{clearTimeout(tm);tm=setTimeout(async()=>{if(tab==='hist')await loadHist();draw();},200);};
+ (async()=>{[phr]=await Promise.all([getPhrases().catch(()=>({items:[]})),loadHist()]);tab=hist.has_history&&hist.total?'hist':'phr';draw();})();}
+
+function phrasesEditor(after){
+ getPhrases(true).then(P=>{let items=P.items.map(x=>({...x}));const groups=[...new Set([...P.groups,...items.map(x=>x.group)])];
+  const d=modal('Βασικές φράσεις του Ημερολογίου',`<p class="desc" style="margin-top:0">Έτοιμες φράσεις που προτείνονται στη «Νέα καταγραφή». Χρησιμοποιήστε αγκύλες [ … ] για τα κενά που συμπληρώνονται κάθε φορά.</p>
+   <div class="row" style="margin-bottom:10px"><input type="search" id="pe_q" placeholder="Αναζήτηση…" style="width:240px"><span class="right"></span><button type="button" class="btn" id="pe_add">${ico('plus')}Νέα φράση</button></div><div id="pe_list" class="pel"></div>`,
+  {wide:'min(1000px,95vw)',extra:`<button type="button" class="btn ghost" id="pe_reset">${ico('undo')}Επαναφορά προτεινόμενων</button>`,ok:'Αποθήκευση',onOk:async()=>{
+   sync();phrasesCache=await api('lifelog/phrases/save',{items:items.filter(x=>x.text.trim())});toast('Οι φράσεις αποθηκεύτηκαν.');after&&after();}});
+  const sync=()=>$$('#pe_list [data-pi]').forEach(row=>{const it=items[+row.dataset.pi];it.text=row.querySelector('textarea').value;it.group=row.querySelector('select').value;});
+  const draw=()=>{const w=fold($('#pe_q').value).split(/\s+/).filter(Boolean);
+   $('#pe_list').innerHTML=groups.map(g=>{const rows=items.map((x,i)=>({...x,i})).filter(x=>x.group===g&&w.every(k=>fold(x.text).includes(k)));if(!rows.length)return '';
+    return `<div class="sgg">${esc(g)}</div>`+rows.map(x=>`<div class="per" data-pi="${x.i}"><textarea rows="1">${esc(x.text)}</textarea><select>${groups.map(o=>opt(o,o,x.group)).join('')}</select><button type="button" class="more" data-pd="${x.i}" title="Διαγραφή">${ico('trash')}</button></div>`).join('');}).join('')||'<p class="hint">Καμία φράση.</p>';
+   $$('#pe_list textarea').forEach(t=>{const fit=()=>{t.style.height='auto';t.style.height=t.scrollHeight+2+'px';};fit();t.oninput=fit;});
+   $$('#pe_list select').forEach(sl=>sl.onchange=()=>{sync();draw();});
+   $$('[data-pd]').forEach(b=>b.onclick=()=>{sync();items.splice(+b.dataset.pd,1);draw();});};
+  $('#pe_q').oninput=()=>{sync();draw();};
+  $('#pe_add').onclick=()=>{sync();$('#pe_q').value='';items.unshift({group:groups[0],text:''});draw();$('#pe_list textarea')?.focus();};
+  $('#pe_reset').onclick=async()=>{if(!await confirmBox('Να επανέλθουν οι προτεινόμενες φράσεις της εφαρμογής;\nΟι δικές σας αλλαγές στις φράσεις θα χαθούν.','Επαναφορά',true))return;phrasesCache=await api('lifelog/phrases/reset');d.close();toast('Οι φράσεις επανήλθαν.');after&&after();};
+  draw();});}
 
 async function llImport(file){
  if(!/\.(docx|xlsx|csv|txt)$/i.test(file.name))return toast(/\.pdf$/i.test(file.name)?'Τα PDF δεν διαβάζονται. Επιλέξτε το αρχικό αρχείο Word (.docx) ή Excel.':'Επιλέξτε αρχείο Word (.docx), Excel (.xlsx) ή CSV.',true);

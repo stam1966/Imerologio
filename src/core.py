@@ -15,8 +15,9 @@ import sqlite3
 import threading
 import unicodedata
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
-VERSION = '2.2.0'
+VERSION = '2.3.0'
 APP_NAME = 'Πρόγραμμα Δράσεων Σχολείου'
 APP_AUTHOR = 'Αρχική ιδέα – επιμέλεια: Σταμάτης Κοκολόγος | Υλοποίηση: Σταμάτης Κοκολόγος, με αξιοποίηση εργαλείων τεχνητής νοημοσύνης'
 DB_NAME = 'school_actions.db'
@@ -318,6 +319,33 @@ def normalize_time(value: str) -> str:
         return datetime.strptime(v, '%H:%M').strftime('%H:%M')
     except ValueError:
         raise ValueError('Οι ώρες πρέπει να έχουν μορφή ΩΩ:ΛΛ, π.χ. 09:30.')
+
+
+PHRASE_GROUPS = ['Έναρξη και λήξη', 'Συνεδριάσεις', 'Προσωπικό', 'Επισκέψεις στελεχών', 'Λειτουργία του σχολείου',
+                 'Γιορτές και επέτειοι', 'Δράσεις και προγράμματα', 'Επισκέψεις και εκδρομές', 'Μαθητές και γονείς', 'Άλλες']
+
+
+def default_phrases() -> list[dict]:
+    """Βασικές φράσεις που συνοδεύουν την εφαρμογή (γενικές, χωρίς ονόματα)."""
+    p = Path(__file__).with_name('lifelog_phrases.json')
+    try:
+        return clean_phrases(json.loads(p.read_text(encoding='utf-8')))
+    except (OSError, ValueError):
+        return []
+
+
+def clean_phrases(items) -> list[dict]:
+    out, seen = [], set()
+    for it in items if isinstance(items, list) else []:
+        if not isinstance(it, dict):
+            continue
+        text = ' '.join(str(it.get('text') or '').split())[:600]
+        group = ' '.join(str(it.get('group') or '').split())[:80] or 'Άλλες'
+        if not text or (group, text) in seen:
+            continue
+        seen.add((group, text))
+        out.append({'group': group, 'text': text})
+    return out
 
 
 def fold(text: str) -> str:
@@ -980,6 +1008,26 @@ class Database:
                                             (log_date, desc, None, now, now)).lastrowid)
             self.conn.commit()
         return lid
+
+    # ---------------------------------------------------------- βασικές φράσεις Ημερολογίου
+    def lifelog_phrases(self) -> dict:
+        raw = self.get_setting('lifelog_phrases', '')
+        items = None
+        if raw:
+            try:
+                items = clean_phrases(json.loads(raw))
+            except (ValueError, TypeError):
+                items = None
+        return {'items': items if items is not None else default_phrases(), 'customized': items is not None,
+                'groups': PHRASE_GROUPS}
+
+    def set_lifelog_phrases(self, items) -> dict:
+        self.set_setting('lifelog_phrases', json.dumps(clean_phrases(items), ensure_ascii=False))
+        return self.lifelog_phrases()
+
+    def reset_lifelog_phrases(self) -> dict:
+        self.set_setting('lifelog_phrases', '')
+        return self.lifelog_phrases()
 
     def lifelog_insert_many(self, records) -> int:
         now = now_iso()

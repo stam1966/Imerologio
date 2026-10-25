@@ -345,6 +345,20 @@ def a_lifelog_import_apply(r):
             'years': plan['years']}
 
 
+def a_lifelog_phrases(r):
+    return db().lifelog_phrases()
+
+
+def a_lifelog_phrases_save(r):
+    lifelog_guard()
+    return db().set_lifelog_phrases(r.get('items') or [])
+
+
+def a_lifelog_phrases_reset(r):
+    lifelog_guard()
+    return db().reset_lifelog_phrases()
+
+
 def a_lifelog_suggest(r):
     lifelog_guard()
     return db().lifelog_suggest(r.get('date') or '', r.get('search') or '')
@@ -597,7 +611,7 @@ ACTIONS = {
     'guide/list': a_guide_list, 'guide/save': a_guide_save, 'guide/delete': a_guide_delete, 'guide/reset': a_guide_reset, 'guide/create': a_guide_create,
     'import/preview': a_import_preview, 'import/apply': a_import_apply, 'template': a_template, 'export': a_export, 'report': a_report,
     'lifelog/status': a_lifelog_status, 'lifelog/setup': a_lifelog_setup, 'lifelog/unlock': a_lifelog_unlock, 'lifelog/lock': a_lifelog_lock,
-    'lifelog/list': a_lifelog_list, 'lifelog/save': a_lifelog_save, 'lifelog/delete': a_lifelog_delete, 'lifelog/undelete': a_lifelog_undelete, 'lifelog/import/preview': a_lifelog_import_preview, 'lifelog/import/apply': a_lifelog_import_apply, 'lifelog/suggest': a_lifelog_suggest, 'lifelog/transfer': a_lifelog_transfer,
+    'lifelog/list': a_lifelog_list, 'lifelog/save': a_lifelog_save, 'lifelog/delete': a_lifelog_delete, 'lifelog/undelete': a_lifelog_undelete, 'lifelog/import/preview': a_lifelog_import_preview, 'lifelog/import/apply': a_lifelog_import_apply, 'lifelog/suggest': a_lifelog_suggest, 'lifelog/phrases': a_lifelog_phrases, 'lifelog/phrases/save': a_lifelog_phrases_save, 'lifelog/phrases/reset': a_lifelog_phrases_reset, 'lifelog/transfer': a_lifelog_transfer,
     'lifelog/report': a_lifelog_report, 'lifelog/settings': a_lifelog_settings,
     'backup/list': a_backup_list, 'backup/create': a_backup_create, 'backup/restore': a_backup_restore, 'backup/upload': a_backup_upload,
     'backup/download': a_backup_download, 'backup/current': a_backup_current, 'backup/settings': a_backup_settings,
