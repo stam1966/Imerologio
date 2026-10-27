@@ -791,7 +791,10 @@ async function sData(){
  <div class="card"><h2>Φάκελος δεδομένων</h2><p class="desc">Η βάση, τα αντίγραφα και οι εξαγωγές. Ενημερώσεις και απεγκατάσταση της εφαρμογής δεν τον αγγίζουν.</p>
   <div class="row"><code style="background:#F4F7F6;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:inherit">${esc(D.root)}</code><span class="hint">${esc(src)}</span></div>
   <div class="row" style="margin-top:12px"><button class="btn" id="d_open">${ico('folder')}Άνοιγμα</button>${['documents','custom'].includes(D.source)?`<button class="btn" id="d_move">Αλλαγή φακέλου…</button>${D.source==='custom'?'<button class="btn" id="d_def">Επιστροφή στα Έγγραφα</button>':''}`:''}</div>
-  <details class="more2" style="margin-top:14px"><summary>Χρήση από πολλούς υπολογιστές</summary><p style="margin:6px 0 12px">Επιλέξτε σε όλους τους υπολογιστές τον ίδιο κοινόχρηστο φάκελο (π.χ. στον διακομιστή του σχολείου) με «Αλλαγή φακέλου…». Η εφαρμογή ανοίγει σε έναν υπολογιστή κάθε φορά και δείχνει σε ποιον είναι ανοιχτή. Μπορείτε να επιλέξετε και τον φάκελο <b>Shared</b> της παλιάς φορητής έκδοσης· τα δεδομένα του χρησιμοποιούνται αυτούσια.</p></details></div>`;
+  <details class="more2" style="margin-top:14px"><summary>Χρήση από πολλούς υπολογιστές</summary><ol style="margin:6px 0 12px;padding-left:20px;line-height:1.6">
+   <li><b>Πρώτος υπολογιστής</b> (αυτός που έχει ήδη τα δεδομένα): «Αλλαγή φακέλου…» → επιλέξτε τον κοινόχρηστο φάκελο. Τα δεδομένα αντιγράφονται εκεί.</li>
+   <li><b>Κάθε άλλος υπολογιστής:</b> «Αλλαγή φακέλου…» → γράψτε επάνω τη διαδρομή δικτύου του ίδιου φακέλου, π.χ. <code>\\\\ΥΠΟΛΟΓΙΣΤΗΣ\\Κοινόχρηστα\\PDS</code>, πατήστε «Μετάβαση» και μετά «Επιλογή αυτού του φακέλου». Όταν εμφανιστεί «✓ Βρέθηκαν δεδομένα», επιβεβαιώστε «Χρήση αυτών των δεδομένων».</li></ol>
+   <p style="margin:0 0 12px">Η εφαρμογή ανοίγει σε έναν υπολογιστή κάθε φορά και δείχνει σε ποιον είναι ανοιχτή. Ο υπολογιστής που μοιράζεται τον φάκελο πρέπει να είναι ανοιχτός. Μπορείτε να επιλέξετε και τον φάκελο <b>Shared</b> της παλιάς φορητής έκδοσης· τα δεδομένα του χρησιμοποιούνται αυτούσια.</p></details></div>`;
  $('#b_new').onclick=async()=>{if(await call('backup/create',{},'Το αντίγραφο δημιουργήθηκε.'))sData();};$('#b_up').onclick=()=>restoreFromFile();
  $('#b_dl').onclick=async()=>{const k=await call('backup/current');if(k)saveFile(b64toBlob(k.data,k.mime),k.filename);};
  $('#b_open').onclick=()=>call('open',{what:'backups'});$('#d_open').onclick=()=>call('open',{what:'data'});
@@ -804,7 +807,7 @@ async function sData(){
  $('#d_move')&&($('#d_move').onclick=()=>folderPicker('Νέος φάκελος δεδομένων',D.root,async(p,info)=>{const mode=info&&info.has_data?'use':'copy';
   if(mode==='use'&&!await confirmBox('Ο φάκελος περιέχει ήδη δεδομένα της εφαρμογής.\n\nΝα χρησιμοποιηθούν αυτά; (Τα τρέχοντα δεδομένα μένουν στον παλιό φάκελο.)','Χρήση αυτών των δεδομένων'))return false;
   if(mode==='copy'&&!await confirmBox(`Τα δεδομένα θα αντιγραφούν στον φάκελο:\n${esc(p)}\n\nκαι η εφαρμογή θα χρησιμοποιεί στο εξής εκείνον. Ο παλιός φάκελος δεν σβήνεται.`,'Μεταφορά'))return false;
-  S=await api('datadir/set',{path:p,mode});sgCache=null;toast('Ο φάκελος δεδομένων άλλαξε.');ui.stab='data';go('settings');},true));
+  S=await api('datadir/set',{path:mode==='use'&&info.data_root?info.data_root:p,mode});sgCache=null;toast('Ο φάκελος δεδομένων άλλαξε.');ui.stab='data';go('settings');},true));
  $('#d_def')&&($('#d_def').onclick=async()=>{if(!await confirmBox(`Επιστροφή στον προεπιλεγμένο φάκελο:\n${esc(D.documents_default)}\n\nΑν εκεί δεν υπάρχουν δεδομένα, θα αντιγραφούν τα τρέχοντα.`))return;const r=await call('datadir/set',{mode:'default'});if(r){S=r;sgCache=null;sData();}});}
 function sUpdates(){
  $('#s_body').innerHTML=`<div class="card" style="max-width:760px"><h2>Ενημερώσεις εφαρμογής</h2><p class="desc">Τρέχουσα έκδοση: <b>${esc(S.version)}</b>${S.update?` · διαθέσιμη: <b>${esc(S.update.version)}</b>`:''}</p>
@@ -819,14 +822,17 @@ async function restoreFromFile(file){
  const data=await readFile(file);const r=await call('backup/upload',{name:file.name,data});
  if(r){await refreshState();sgCache=null;catWork=null;toast(`Τα δεδομένα φορτώθηκαν (${plural(r.count,'δράση','δράσεις')}).`);ui.f.school_year=S.current_school_year;go('home');}}
 async function folderPicker(title,start,onPick,showData){
- const draw=async path=>{let j;try{j=await api('fs/list',{path});}catch(e){toast(e.message,true);if(path)return draw('');return;}
-  const body=`${j.path?`<div class="small" style="margin-bottom:8px">${j.crumbs.map(c=>`<button type="button" class="btn sm ghost" data-p="${esc(c.path)}">${esc(c.label)}</button>`).join(' › ')}</div>`:''}
+ let last='';const draw=async path=>{let j;try{j=await api('fs/list',{path});}catch(e){toast(e.message,true);if(path&&path!==last)return draw(last);return;}last=j.path;
+  const body=`<div class="row" style="margin-bottom:10px;flex-wrap:nowrap"><input id="fs_go" value="${esc(j.path)}" placeholder="Διαδρομή φακέλου, π.χ. \\\\ΔΙΑΚΟΜΙΣΤΗΣ\\Κοινόχρηστα\\PDS" class="grow" spellcheck="false"><button type="button" class="btn sm" id="fs_gob">Μετάβαση</button></div>
+   ${j.path?'':'<p class="hint" style="margin:-4px 0 10px">Για φάκελο σε άλλον υπολογιστή του δικτύου, γράψτε τη διαδρομή του (όπως στην Εξερεύνηση αρχείων) και πατήστε «Μετάβαση», ή επιλέξτε τον δίσκο δικτύου του.</p>'}
+   ${j.path?`<div class="small" style="margin-bottom:8px">${j.crumbs.map(c=>`<button type="button" class="btn sm ghost" data-p="${esc(c.path)}">${esc(c.label)}</button>`).join(' › ')}</div>`:''}
    <div class="fsl">${j.path?`<button type="button" data-p="${esc(j.parent)}">⬑ Επάνω</button>`:''}${j.places.map(p=>`<button type="button" data-p="${esc(p.path)}">⭐ ${esc(p.label)}</button>`).join('')}${j.drives.map(p=>`<button type="button" data-p="${esc(p.path)}">💽 ${esc(p.label)}</button>`).join('')}
    ${j.dirs.map(d=>`<button type="button" data-p="${esc(d.path)}">📁 ${esc(d.name)}</button>`).join('')}${j.path&&!j.dirs.length?'<div class="hint" style="padding:10px">Κανένας υποφάκελος.</div>':''}</div>
    ${j.path?`<div class="row" style="margin-top:10px"><input id="fs_new" placeholder="Όνομα νέου υποφακέλου"><button type="button" class="btn sm" id="fs_mk">Δημιουργία</button></div>
-   <p class="small" style="margin:10px 0 0">Επιλογή: <b>${esc(j.path)}</b> ${j.writable?'':'<span style="color:var(--danger)">(δεν επιτρέπεται εγγραφή)</span>'}${showData&&j.has_data?'<br><span style="color:var(--ok)">✓ Ο φάκελος περιέχει δεδομένα της εφαρμογής.</span>':''}</p>`:'<p class="hint">Επιλέξτε τοποθεσία.</p>'}`;
+   <p class="small" style="margin:10px 0 0">Επιλογή: <b>${esc(j.path)}</b> ${j.writable?'':'<span style="color:var(--danger)">(δεν επιτρέπεται εγγραφή)</span>'}${showData&&j.has_data?`<br><span style="color:var(--ok)">✓ Βρέθηκαν δεδομένα της εφαρμογής${j.data_root&&j.data_root!==j.path?` (θα χρησιμοποιηθεί ο φάκελος ${esc(j.data_root)})`:''}.</span>`:''}</p>`:'<p class="hint">Επιλέξτε τοποθεσία.</p>'}`;
   const d=modal(title,body,{ok:'Επιλογή αυτού του φακέλου',wide:'min(720px,95vw)',onOk:async()=>{if(!j.path||!j.writable)throw Error('Επιλέξτε φάκελο με δικαίωμα εγγραφής.');return onPick(j.path,j);}});
   d.querySelector('[data-ok]').disabled=!j.path||!j.writable;$$('#dialog [data-p]').forEach(b=>b.onclick=()=>draw(b.dataset.p));
+  const goto=()=>{const v=$('#fs_go').value.trim().replace(/^"|"$/g,'');if(v)draw(v);};$('#fs_gob').onclick=goto;$('#fs_go').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();goto();}};
   $('#fs_mk')&&($('#fs_mk').onclick=async()=>{try{const r=await api('fs/mkdir',{parent:j.path,name:$('#fs_new').value});draw(r.path);}catch(e){toast(e.message,true);}});};
  draw(start||'');}
 

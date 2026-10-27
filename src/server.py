@@ -557,6 +557,12 @@ def a_datadir_set(r):
         new_root = Path((r.get('path') or '').strip())
         if not str(new_root) or not new_root.is_absolute():
             raise ValueError('Επιλέξτε φάκελο.')
+    if mode == 'use':
+        found = storage.find_data_root(new_root)
+        if found is None:
+            raise ValueError('Στον φάκελο δεν βρέθηκαν δεδομένα της εφαρμογής:\n' + str(new_root)
+                             + '\n\nΕπιλέξτε τον φάκελο που περιέχει τον υποφάκελο «data» με το αρχείο school_actions.db.')
+        new_root = found
     storage.check_writable(new_root)
     if new_root.resolve() == old_root.resolve():
         raise ValueError('Αυτός είναι ήδη ο φάκελος δεδομένων.')
@@ -564,8 +570,9 @@ def a_datadir_set(r):
     if mode == 'copy':
         storage.copy_tree_data(paths(), dst)
     elif mode == 'use':
-        if not dst.db.exists() or not core.is_valid_database(dst.db):
-            raise ValueError('Στον φάκελο δεν βρέθηκαν δεδομένα της εφαρμογής (data\\school_actions.db).')
+        if not core.is_valid_database(dst.db):
+            raise ValueError('Το αρχείο δεν είναι βάση δεδομένων της εφαρμογής ή δεν ήταν δυνατό να ανοίξει:\n' + str(dst.db)
+                             + '\n\nΑν βρίσκεται σε άλλον υπολογιστή, ελέγξτε ότι έχετε δικαίωμα ανάγνωσης και εγγραφής στον κοινόχρηστο φάκελο.')
     elif mode == 'default':
         if not dst.db.exists():
             storage.copy_tree_data(paths(), dst)

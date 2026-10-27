@@ -222,3 +222,18 @@ class Phrases(Base):
         self.assertEqual(q['items'], [{'group': 'Συνεδριάσεις', 'text': 'Συνεδρίαση ΕΔΥ.'}, {'group': 'Άλλες', 'text': 'Κάτι'}])
         self.assertEqual(self.db.set_lifelog_phrases([])['items'], [])  # κενή λίστα είναι επιλογή του χρήστη
         self.assertFalse(self.db.reset_lifelog_phrases()['customized'])
+
+
+class SharedFolder(unittest.TestCase):
+    def test_find_root_and_valid_db_with_greek_path(self):
+        import storage
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t) / 'Κοινόχρηστα σχολείου' / 'PDS'
+            (root / 'data').mkdir(parents=True)
+            db = core.Database(root / 'data' / 'school_actions.db'); db.close()
+            self.assertTrue(core.is_valid_database(root / 'data' / 'school_actions.db'))
+            self.assertEqual(storage.find_data_root(root), root)
+            self.assertEqual(storage.find_data_root(root / 'data'), root)  # επιλέχθηκε ο φάκελος data
+            self.assertIsNone(storage.find_data_root(Path(t)))
+            self.assertTrue(storage.browse(str(root))['has_data'])
+            self.assertEqual(storage.browse(str(root / 'data'))['data_root'], str(root))

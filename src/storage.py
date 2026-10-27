@@ -265,6 +265,20 @@ def _drives():
     return out
 
 
+def find_data_root(path) -> Path | None:
+    """Ο φάκελος δεδομένων της εφαρμογής που αντιστοιχεί στην επιλογή του χρήστη:
+    ο ίδιος (αν περιέχει data\\school_actions.db) ή ο γονικός (αν επιλέχθηκε ο φάκελος data)."""
+    p = Path(path)
+    try:
+        if (p / 'data' / 'school_actions.db').is_file():
+            return p
+        if (p / 'school_actions.db').is_file() and p.name.lower() == 'data':
+            return p.parent
+    except OSError:
+        pass
+    return None
+
+
 def browse(path: str = '') -> dict:
     if not path:
         home = Path.home()
@@ -275,9 +289,18 @@ def browse(path: str = '') -> dict:
             if p and p.is_dir():
                 places.append({'label': label, 'path': str(p)})
         return {'path': '', 'parent': None, 'places': places, 'drives': _drives(), 'dirs': [], 'crumbs': [], 'writable': False}
+    path = path.strip().strip('"')
+    if re.fullmatch(r'(\\\\|//)[^\\/]+[\\/]?', path):
+        raise ValueError('Γράψτε και το όνομα του κοινόχρηστου φακέλου, π.χ. ' + path.rstrip('\\/') + '\\Κοινόχρηστα')
     p = Path(path).expanduser()
-    if not p.is_dir():
-        raise ValueError('Ο φάκελος δεν υπάρχει: ' + str(p))
+    try:
+        ok = p.is_dir()
+    except OSError:
+        ok = False
+    if not ok:
+        raise ValueError('Ο φάκελος δεν βρέθηκε ή δεν είναι προσβάσιμος: ' + str(p)
+                         + ('\n\nΕλέγξτε ότι ο υπολογιστής που μοιράζεται τον φάκελο είναι ανοιχτός και ότι έχετε δικαίωμα πρόσβασης.'
+                            if str(p).startswith(('\\\\', '//')) else ''))
     dirs = []
     try:
         for c in p.iterdir():
@@ -296,7 +319,7 @@ def browse(path: str = '') -> dict:
     crumbs = [{'label': (q.name or str(q)).rstrip('\\/') or str(q), 'path': str(q)} for q in reversed([p, *p.parents])]
     return {'path': str(p), 'parent': str(p.parent) if p.parent != p else '', 'places': [], 'drives': [], 'crumbs': crumbs,
             'dirs': [{'name': d, 'path': str(p / d)} for d in dirs[:500]], 'writable': writable,
-            'has_data': (p / 'data' / 'school_actions.db').is_file()}
+            'has_data': bool(dr := find_data_root(p)), 'data_root': str(dr) if dr else ''}
 
 
 BAD_NAME = re.compile(r'[<>:"/\\|?*\x00-\x1f]')

@@ -17,7 +17,7 @@ import unicodedata
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-VERSION = '2.3.0'
+VERSION = '2.3.1'
 APP_NAME = 'Πρόγραμμα Δράσεων Σχολείου'
 APP_AUTHOR = 'Αρχική ιδέα – επιμέλεια: Σταμάτης Κοκολόγος | Υλοποίηση: Σταμάτης Κοκολόγος, με αξιοποίηση εργαλείων τεχνητής νοημοσύνης'
 DB_NAME = 'school_actions.db'
@@ -464,8 +464,9 @@ def is_valid_database(path) -> bool:
         with open(path, 'rb') as f:
             if f.read(16) != b'SQLite format 3\x00':
                 return False
-        from pathlib import Path
-        con = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
+        # Απλή σύνδεση με τη διαδρομή (όχι URI): οι διαδρομές δικτύου \\διακομιστής\φάκελος
+        # και οι αντιστοιχισμένοι δίσκοι δικτύου δεν γίνονται δεκτές από το SQLite ως URI.
+        con = sqlite3.connect(str(path), timeout=10)
         try:
             cols = {r[1] for r in con.execute('PRAGMA table_info(actions)')}
         finally:
